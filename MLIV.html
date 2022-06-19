@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>ML.IV</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Glen Waddell, Edward Rubin, Connor Lennon" />
+    <link href="MLIV_files/remark-css/default.css" rel="stylesheet" />
+    <link href="MLIV_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="MLIV_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# ML.IV
+## What can we Machine learn (too much of) in 2SLS
+### Glen Waddell, Edward Rubin, Connor Lennon
+### Fall 2021
+
+---
+
+class: inverse, middle
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+&lt;/style&gt;
+
+
+# Introduction
+
+---
+# MLIV
+
+### Machine Learning in Applied Econometrics
+
+For econometric applications, there is increasing interest in using machine learning for
+
+--
+
+- .hi[Paper Marketability]: machine learning application may increase interest
+
+--
+
+- .hi-purple[Better Predictors]: Many targets will be better predicted by some ML algorithm.
+
+--
+
+**This thing**:
+
+.hi[Q] "Running into trouble?" 
+
+--
+
+.hi[A] "Have you tried machine learning?"
+
+---
+# Intuition
+
+## A promising angle
+
+- Some ML tool might be able to boost the strength of a weak or set of weak instruments in first stage of 2SLS.
+
+--
+
+Despite the interest, much of the intuition from existing econometric methods doesn't map directly to using Machine Learning for causal queries.
+
+--
+
+.hi[Q] How does using out-of-the-box machine learning perform when predicting the first stage of 2SLS?
+
+--
+
+.hi-orange[A] Unpredictably.
+
+---
+# Intuition
+
+Much of the assumptions around the first stage center around optimizing two narratives
+
+--
+
+1.) **Relevance**, ie, that your instrument has explanatory power ✅
+
+--
+
+2.) **Exogeneity**, which is generally spoken about in terms of correlations, ie, `\(corr(u,\textbf{z}) = 0\)`.
+
+--
+
+Machine learning in this context: 
+
+- complicates the second 
+
+- introduces two more.
+
+---
+# Intuition
+
+Including .hi-purple[machine learning] introduces these further conundrums
+
+-  .hi[Potentially Recovering endogeneity - overfitting] 
+
+doubly dangerous in causal estimation
+
+--
+
+-  .hi-slate[Complex Exclusion restrictions]
+
+The set of exclusion restrictions under consideration is much larger. 
+
+Instead of  `\(corr(\varepsilon_i, \textbf{z}) = 0\)`, need `\(E(\varepsilon_i|\textbf{z}) = 0\)`.
+
+--
+
+-  .hi-orange[Inflates Bias] 
+
+Bias-variance tradeoff can lead to inflated coefficients in the second stage of 2SLS if variance-reduction is primary strategy.
+
+--
+
+__Takeaway:__ Using past applied econometric findings &amp; ML more challenging.
+
+--
+
+__Approach:__ We run a monte-carlo simulation on several synthetic datasets
+
+__find:__ using machine learning under classic assumptions can lead to worse than naive-OLS performance.
+
+---
+# Decomposition of Error
+
+Suppose, for a moment, that we are interested in a simple linear IV estimate for causal parameter `\(\beta_1\)`, where x is (traditionally) endogenous
+`$$y = \beta_0 + \beta_1x + u$$`
+`$$x = \beta_0 + \pi\mathbf{z} + w$$`
+
+`$$cov(x,u) \neq 0$$`
+.hi[2SLS], produces the estimate
+
+`\(\hat{\beta}_1^{2SLS} = \beta_1 + \frac{Cov(\hat{x}, w)}{Var(\hat{x})}\)`
+
+--
+
+- Where `\(\frac{Cov(\hat{x}, w)}{Var(\hat{x})}\)` represents the bias
+
+---
+# Decomposition of Error
+
+This term breaks down into an informative form-
+
+`$$\frac{Cov(\hat{x}, w)}{Var(\hat{x})} = \frac{\beta_1Cov(\hat{x},e) + Cov(\hat{x},u)}{Var(\hat{x})}$$`
+--
+
+- In OLS, `\(\beta_1Cov(\hat{x},e)\)` is mechanically 0, allowing for `\(Cov(\hat{x},u)\)` to be assumed 0 given the estimating model.
+
+--
+
+- .hi-orange[However]: nonparametric estimate of the first stage makes no guarantees on `\(Cov(\hat{x},u)\)`
+
+.footnote[given traditional assumptions.]
+
+--
+
+- Additionally, nonlinear first stages can produce non-orthogonal errors, meaning `\(\beta_1Cov(\hat{x},e) \neq 0\)`
+
+---
+# Term 1
+
+`$$Term_1 \equiv \beta_1Corr(\hat{x},e)$$`
+--
+
+__Cases__
+
+Econometrics has a very limited 'intuitional toolbox' because this term drops out in standard OLS.
+
+--
+
+The effect on bias can be digested into `\(Sign\{\beta_1\} \cdot Sign\{Corr(\hat{x},x)\sigma_x - \sigma_{\hat{x}}\}\)`
+
+--
+
+Quickly noticeable is that if the ML algorithm perfectly reproduces estimand `\(x\)`, this term is not of concern.
+
+--
+
+If we define a variance reduction strategy as 
+`$$min_{\hat{x}}\ \sigma_{\hat{x_s}},\ \hat{x_s} \in \hat{X}\ s.t. Corr(\hat{x_s}, x) \geq Corr(\hat{x}_{-s}, x, x)$$` 
+
+variance reduction causes no bias at a ridge of fixed points that changes with the explanatory power of the algorithm &amp; `\(\sigma_{\hat{x}}\)`
+
+---
+# Term 2
+
+`$$Term\ 2 \equiv Cov(\hat{x},u)$$`
+__Exogeneity__
+
+.hi-purple[Exclusion Restriction]. 
+
+OLS is linear in form, requires `\(Cov(\textbf{z}\hat{\beta}, u) = 0\)` 
+
+- (some) ML .hi[requires] `\(Cov(f(\textbf{z}), u)\)` for any arbitrary functional form `\(f\)`.
+
+--
+
+__Conundrum__
+
+This term leaves the practitioner with one of three tough choices
+
+--
+
+1.) Restrict the functional form of the ML procedure
+
+--
+
+2.) Extend the "Exclusion Restriction" 
+
+- If we can believably strengthen `\(corr(\textbf{z}, e) = 0\)` to `\(E(e|\textbf{z}) = 0\)` then we are safer.
+
+--
+
+3.) Make big assumptions about ML's relationship to excludibility. .hi[*] 
+
+.footnote[.hi[*] Leaving one at the mercy of the reviewer]
+
+---
+#Term 3
+
+`$$Term\ 3 \equiv \frac{1}{Var(\hat{x})}$$`
+
+Variance reduction, typically, is not a concern in OLS-2SLS (though OLS does reduce variance) because our intuition toolbox typically implies the numerator will be asmptotically 0.
+
+--
+
+In PLR-based.hi[*] .hi-purple[MLIV], many applications rely on a convergence approach to identification
+
+- can result in an almost-IV situation outside of optimal conditions. 
+
+- In these cases, variance reduction can lead to higher-than-naive bias, even under reasonable assumptions
+
+.footnote[.hi[*] PLR: Partially Linear Regression]
+
+--
+
+Now, let's see how these perform on a variety of ML-reasonable datasets
+
+---
+# DGP
+
+Follows *Belloni et al (2012)* with a few modifications
+
+`$$y \ \beta_0 + \beta_1x_1 + \varepsilon_y$$`
+`$$x_1 = \mathbf{z \pi} + \varepsilon_v$$`
+`$$\begin{align*} \\(\varepsilon_y,\, \varepsilon_v) &amp;\sim N\!\left(0,\, \left[
+  \begin{matrix}
+    \sigma^2_y &amp; \sigma_y \sigma_v\\
+    \sigma_v \sigma_y &amp; \sigma^2_v
+  \end{matrix}\right] \right)~,
+  \\\end{align*}$$`
+
+`$$\begin{align*}\\\mathbf{z} &amp;= \left[\begin{matrix} z_{1} &amp; z_{2} &amp; \cdots &amp; z_{100} \end{matrix}\right] \sim N(\mathbf{0},\, \Sigma_{z})~,
+  \\
+  \Sigma_{z}{[j,j]} &amp;= \text{Var}(z_{j}) = \sigma^2_j = 1, \enspace \forall j \in \{1,\, \dots,\, 100\}~, and
+  \\
+  \Sigma_{z}{[j,k]} &amp;= \text{Cov}(z_{j},\, z_{k}) = \text{Cor}(z_{j},\, z_{k}) = 0.6^{|j-k|}, \enspace \forall (j,\,k) \in \{1,\ \dots,\, 100\}~.
+ \end{align*}$$`
+ 
+ `$$N = 1000$$`
+ 
+ `$$Num. \ Simulations = 500$$`
+ 
+---
+# DGP
+
+`$$x_1 = \mathbf{z \pi} + \varepsilon_v$$`
+__Original:__ `$$\tilde{\pi_i} = .7^{i-1}$$`
+
+__Split:__ `$$\pi_{50} &gt; \pi_{51} &gt; \cdots &gt; \pi_{100} &gt; \pi_{1} &gt; \pi_{2} &gt; \cdots &gt; \pi_{49}$$`
+
+__Shuffled:__ Randomly shuffled in each iteration.
+
+--
+
+Models are cross-validated across 5 folds for hyperparameter fitting
+
+--
+
+.hi-orange[In-sample predictions] are used to fit `\(\hat{x}\)` to `\(x\)`.
+
+--
+
+*Note:* Data outputs are not normalized to `\(N(0,1)\)`, which likely harms NNet performance somewhat here.
+
+---
+class: clear
+
+.center[&lt;img src="SyntheticInstruments.png" style="width: 150%", class="center"/&gt;]
+
+---
+class: clear
+
+.center[&lt;img src="fig2.png" style="width: 150%", class="center"/&gt;]
+
+---
+class: clear
+
+.center[&lt;img src="fig3.png" style="width: 150%", class="center"/&gt;]
+
+---
+# Main Takeaways
+
+The approximately linear models seem to produce .hi[less bias] than their nonlinear counterparts.
+
+--
+
+Models that rely on both nonlinear mappings and variance reduction (ensemble strategy), such as *Random Forest*
+
+--
+
+Simpler NNets perform better here, and cross-validation does have neural nets prefer simpler representation when allowed to cross-validate.
+
+--
+
+**Big point:** naively inserting ML into a 2SLS scenario without considering the functional causal model is **very dangerous.**
+
+---
+# Light
+
+Not all is lost - many algorithms have been invented that intelligently incorporate ML into 2SLS.
+
+--
+
+Concern is incorporating the assumptions of those models into the econometric toolbox.
+
+---
+# Things to Do
+
+## What things I think I need to complete
+
+1.) Extend the decomposition to D/DML by Chernozhukov (2018).
+
+2.) Maybe of interest to do a 'causally penalized' estimator for NNet
+
+3.) Do an example where economists typically rely on 'intuitive exogeneity' rather than formal exogeneity, eg, synthetic Card instrument of distance from a university for education.
+
+4.) Your suggestions?
+
+---
+# Thanks!
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

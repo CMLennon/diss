@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Revisiting the stratified cost index</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Connor Lennon" />
+    <link href="RevisitingSCI_files/remark-css/default.css" rel="stylesheet" />
+    <link href="RevisitingSCI_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="RevisitingSCI_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Revisiting the stratified cost index
+## A causal analysis
+### Connor Lennon
+### Fall 2021
+
+---
+
+class: inverse, middle
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+&lt;/style&gt;
+
+
+# Introduction
+
+---
+# What
+
+## Fire Suppression Costs
+
+US expenditures on wildfire suppression are increasing
+
+--
+
+.cent[&lt;img src="suppressioncosts.png" style="width: 100%", class="center"/&gt;]
+.footnote[
+Source: .hi[[Wildfire Today](https://wildfiretoday.com/2018/03/29/firefighting-costs-1985-2017/)]
+]
+
+--
+
+1. What are we doing wrong, and are there policy changes we could implement to change this?
+
+2. There seems to be some evidence that this money disproportionately protects higher-income individuals - fairness concerns (Boomhower &amp; Baylis (2020), Wibbenmeyer (WP)). We don't really understand why
+
+- What's the solution to the above?
+
+--
+
+__Important step:__ We need to actually unify a causal model and identify what we can learn
+
+
+---
+# What
+
+.hi-orange[Long running trend] of cost increases. Cost-reduction has been a priority of the USFS since mid 1990s (Hand et al., 2014).
+
+--
+
+An early attempt (and one of the most prominent) to predict costs was performed in a landmark paper (Gebert et. al 2007.) This created the Stratified Cost Index (SCI).
+
+- log-log regression of spatial factors on suppression cost per acre, with data available at the point-level.
+
+Despite it's simplicity, it is still state-of-the-art in the forest service (with modifications) for predicting fire suppression costs per-acre.
+
+--
+
+.hi-orange[Why?] 
+--
+The forest service, at minimum, has expert data-scientists who have experience with ML (prefer RF and their descendents).
+
+- I'll argue, that future attempts to predict costs have ignored .hi-blue[causality] and models failed when forced to go OOD.
+
+---
+# Contribution 
+
+This work contributes to existing work by doing a couple of things
+
+--
+
+- Combines existing functional models for fire spread, fire suppression and hedonic amenity analysis to ...
+
+--
+
+- Create a comprehensive causal graphical model of property values on fire suppression, and using a minimum adjustment set of spatially-explicit data as inputs...
+
+--
+
+- Exceeds* out of sample performance of the SCI (or the closest approximations I have found), with help from an adapted version of __CCT__ but...
+
+--
+
+- *most importantly* Using a technique from (Chernozhukov et al., 2018) called double/debiased machine learning identifies the direct causal effect of property values on suppression costs
+
+Which I'll argue, when controlling for spatial distribution of fuels, alternative risk factors and burn-path-dependent-considerations, has a magnitude of between 10 and 25% of existing model estimates (statistically significant difference) and
+
+--
+
+is very close to `\(0^*\)`.
+
+.footnote[*: so far]
+
+---
+# Why You Should Care
+
+### Policy Responses to Inequality of Fire Suppression
+
+.bigger[**Q** If we implement zoning controls and that leads to increased housing prices, should we expect more expensive fire suppression?]
+
+--
+
+.bigger[.slate[Yes:] Because fire managers seek to minimize damage, they will apply more expensive solutions to protect more expensive homes]
+
+.bigger[.slate[No:] Is the effect truly causal? Maybe zoning controls are minimally impactful]
+
+--
+
+.bigger[**Q:** How much are housing locations to blame for this? How much can we attribute this result to fire manager choices (on average)]
+
+--
+
+.bigger[.slate[A] We need at minimum some approximation of an intervention to begin to parse this system]
+
+---
+# The atmosphere overview
+
+## Idea
+
+- Hedonic analysis is predicated upon homes accumulating value through portfolios of amenities that buyers value
+
+- Fire suppression tries to use as few resources as possible while preventing large amounts of damage.
+
+--
+
+- The portfolio of goods that increase the value of a property are likely strongly correlated with conditional fire risk, eg forested area, natural resources nearby, nice views from a relative high point
+
+--
+
+- It is ALSO correlated with ease of access and cheaper/safer suppression for fire managers, eg accessibility, nice roads, cell phone coverage
+
+--
+
+- Those things likely don't enter linearly into the utility function - in fact, their functional forms are largely unknown. 
+
+So we can combine a graphical causal model of hedonic home prices with fire suppression considerations to identify variables we need to adjust for and use ML to learn these independent control functions.
+
+---
+# What kind?
+
+## Pearl's Causal Ladder
+
+What kind of causality is identifiable here? Let's climb or descend
+
+--
+
+1.) Prediction? 
+
+`\(p(y|X=x)\)` 😄
+
+- Been done. Many times over, in numerous ways - including using spatial data.
+
+--
+
+2.) Intervention?
+
+`\(p(y|do(X=x))\)` 🤷
+
+- Maybe - but we need a graphical/probabilistic model of cause and effect
+
+--
+
+3.) Counterfactual?
+
+`\(p(Y = y_1|do(X=x)\ \&amp;\ \hat{Y} = y_2)^1\)` 🔕 
+
+- We'd need either a functional causal model (eg. x = 2y) or a graphical causal model w/ homogenous units of treatment (ie, no changes of scale)
+
+.footnote[1 A "clarifying" abuse of notation]
+
+---
+# Basics of D/DML
+
+
+
+&lt;img src="RevisitingSCI_files/figure-html/probfig-1.png" style="display: block; margin: auto;" /&gt;
+
+Illustrate the general idea of what is happening in a simplified version of the causal space:
+
+- __Debiased/Double Machine Learning__ deals with a relaxation of the assumptions inherent in a linear regression setting for cases of complex 'nuisance functions'.
+
+- Solves a version of __partially linear regression__...
+
+--
+
+- Solve for `\(\theta\)` in the following system of equations
+
+`$$X \equiv \{Rsk, Envr, Amn\}$$`
+`$$Supp = \theta H.P + g(X) + \varepsilon_1$$`
+`$$H.P = f(X) + \varepsilon_2$$`
+
+---
+# Basics of D/DML
+
+
+
+&lt;img src="RevisitingSCI_files/figure-html/partialout.5-1.png" style="display: block; margin: auto;" /&gt;
+
+
+.center[*Sometimes you don't know* __U(tree)__]
+
+--
+
+Solving problems like this using ols-based tools requires either a __lot__ of structural knowledge, or assumptions about `\(f(x)\)` and `\(g(x)\)`
+
+In the fire suppression case, a lot needs to be known about how relevant risk-driving .hi-orange[Environmental] variables impact .hi-purple[housing prices]. 
+
+--
+
+In economic analysis, these are assumed to be captured by error terms, directly measured by WTP, part of home price, or estimated through choice experiments.
+
+---
+# Basics of D/DML
+
+
+
+&lt;img src="RevisitingSCI_files/figure-html/partialout2-1.png" style="display: block; margin: auto;" /&gt;
+Instead, we can solve the inverse problem. Estimate `\(\hat{g}\)` and `\(\hat{f}\)`, then difference-out effects.
+
+--
+
+Rather than use structural assumptions about the functional mapping of features `\(X\)` to `\(Supp\)` or `\(H.P\)`, use a functionally appropriate machine learning algorithm to find data-driven version.
+
+---
+# So....
+
+.cent[.bigger[__"Just control for the environment!"__]]
+
+--
+
+Unfortunately, the variable on the prior slides labeled .orange['environment'] is actually a collection of variables, most of which we do not observe.
+
+- This is why Wildfire research is inherently interdisiciplinary - any causal estimation will consider physics, economics, ecology and history somewhere in the assumption set.
+
+--
+
+ __1__ We need to identify which elements are treated as 'action inputs' by fire managers, and
+
+--
+
+ __2__ have independent causal effects on outcomes (Fire suppression costs or amenities) of interest.
+
+--
+
+This means it is important to separate effects in three separate models and understand their piece-wise parts they play in this story
+
+`$$Environment \rightarrow Strategic\ Considerations$$`
+`$$Environment \rightarrow Housing\ Prices$$`
+$$Strategic\ Decisions_{t-1} \rightarrow Environment_t $$
+
+---
+# Models
+
+Fire suppression cost estimation has a long history - and the model is fairly well established
+
+--
+
+Fire managers are the 'agents' in this story, and seek to solve the following minimization problem -
+
+`$$\min_{x_1\dots x_n}\ C(\cdot)-NVC_{g,f}(\cdot)$$`
+
+Where
+
+- `\(X \equiv \{{x_1 \dots x_n}\}\)` is a set of available 'resources'
+
+- `\(C(\cdot) = \textbf{w}_gX\)` is total suppression costs per acre, where `\(\textbf{w}_g\)` is a set of non-responsive prices set prior to the current fire season
+
+- `\(NVC_{g,f}(\cdot)\)` is a function that captures expected .hi-slate[N]et .hi-slate[V]alue .hi-slate[C]hange
+
+Meaning: the expected change in assets conditional on a burn of a given intensity, `\(f\)` based on weights determined by stakeholders, `\(g\)`
+
+__Important__: Fire managers do not directly pay costs `\(C\)` or suffer from negative changes in `\(NVC\)`.
+
+--
+
+Let's explore how environmental variables impact `\(NVC\)`
+
+---
+# Value
+
+.hi-purple[PURPLE] `\(\rightarrow\)` involved in both fire and amenity components.
+
+Fire managers in all areas of the country respond to vastly varying priorities that are sensitive to local conditions 
+
+- interviews show they are given unprecedented freedom to solve their own optimization problem. .hi-slate[NVC] tries to bring this under a single umbrella.
+
+--
+
+.hi-slate[NVC] represents a substantial departure from existing models which treat fire as a phenomenon that produces 'damages.'
+
+--
+
+It acknowledges that fire not only damages property, but also may provide vital ecosystem enhancing benefits .orange[*]
+
+.footnote[.orange[*] Classic example -Sequoia in California in 1960s.]
+
+--
+
+The value change is dependent on the intensity of the burn __and__ the portfolio of values present in the location of the fire.
+
+--
+
+Those values can include .hi-purple[Infrastructure], .hi-purple[Public Assets] like parks, .hi-purple[Timber for Harvest] and .hi-purple[Ecosystems].
+
+--
+
+This portfolio of values is weighted by interest groups based on local experts, residents, and forest service experts, and the probability of damage under a range of fire intensity levels is assessed.
+
+- The forest service has a beautiful diagram for this procedure from Scott et al. 2013.
+
+---
+class:clear
+
+
+&lt;img src="WildfireRisk.png" style="width: 140%", class="center"/&gt;
+.footnote[Source: Scott et al. 2013 Figure]
+
+
+
+---
+# Inputs to Value
+
+## Calculating Expected NVC
+
+Separate from suppression, a fire is internalized as the expectation of a conditional probability distribution over burn intensities **i**
+
+`\(E(P(NVC|ignition)) = \sum^n_{i=1}P(BP_i*NVC_i|ignition)\)`
+
+--
+
+Important parts -
+
+`\(NVC_i\)`, conditional on burn intensity, is a constant
+
+`\(P(BP_i|ignition)\)` is burn probability for some area of interest. This value is going to now be *path dependent.* 
+
+How does fire spread?
+
+---
+# Rothermel
+
+On a micro scale (millimeters) - we know the answer to this very well
+
+--
+
+Rothermel (1972) is a physics-based model that fundamentally comes from
+
+$$
+Spread=\frac{heat\ received\ by\ unburned\ fuel}{heat\ required\ to\ ignite}
+$$
+
+--
+
+
+&lt;img src="fire-spread.jpg" style="width: 100%", class="center"/&gt;
+
+.footnote[Rein, 2015]
+
+---
+# Scaling up
+
+Integrating Rothermel's model into real world conditions becomes complex for several reasons...
+
+--
+
+1.) Fuel is not uniform
+
+--
+
+2.) Humans put stuff in weird places, like roads, which interrupt fuel beds
+
+--
+
+3.) It's unclear why, but fires quickly seem to grow over an unknown number of unevenly spaced 'growth events' to some size, and then burn out after some time.
+
+--
+
+4.) __Crown Fires__
+
+--
+
+Crown fires are fires that occur in the canopy of trees.  Increase spotting.red[*] which lead to damage much further away from the fire
+
+
+.cent[&lt;img src="crownfire.jpg" style="width: 70%", class="center"/&gt;]
+
+.footnote[.red[*] __Spotting__: When burning .red[debris] like leaves, grasses are blown much further away by the wind.
+image source: [nwcg.gov](https://www.nwcg.gov/publications/pms437/crown-fire/active-crown-fire-behavior)
+]
+
+---
+# AGNI-RAR
+
+.bigger[Combining all of this into a unified model of damage is tricky]
+
+.bigger[so I treat it as union of several graphs with differing adjacency rules- one for each transfer type.]
+
+--
+
+.bigger[This has actually already been done in an existing work - *Unraveling the Complexity of Wildland Urban Interface Fires (Mahmoud &amp; Chulahwat)*
+
+A cell's probability of burning at a given intensity level **i**, is a function of the threat vector graph `\(G = (V, \mathcal{E})\)` where `\(V = \{v_1,\dots, v_n\}\)` are nodes (cells) and `\(E \subset NxN\)` are edges.]
+
+---
+# AGNI-RAR
+
+Then, equipped with this graph, fire spreads according to an overlapping set of adjacencies
+
+--
+
+for cell in position `\(X=x\)` and `\(Y=y\)`
+
+$$
+BP_i^{total} = BP^{(x,y)}_i(BP^{(Spotting)(s) }_i \cup BP^{(Radiance)(n_r(x),n_r(x))}_i\cup BP^{(Convection(n_c(x),n_c(y)))}_i)
+$$
+
+Where `\(n_c\)` and `\(n_r\)` are neighborhoods goverened by the Rothermel burn model, and `\(s \in\{-x,-y\}\)` are all cells in a risk consideration set except (x,y)
+
+ - Radiance and Convection have adjacency determined by cell-adjacency and wind direction
+ 
+ - Spotting adjacency is a function of .hi-purple[topology], distance, .hi-purple[fuel type] and wind speed/direction and expected weather turbulence as well as (expected) vertical wind gradient.
+
+--
+
+This path of burn will dictate, how our `\(NVC\)` will change across different landscapes, for different objectives and over "time"
+
+--
+
+Why "time"? 
+
+- Fires don't burn consistently- for unknown reasons, they follow an unusual cycle of growth event followed by stasis. This could be due to suppression or anthropogenic landscapes, but it's not clear.
+
+---
+# Fire Suppression
+
+Fire managers have a __hard__ job.
+
+They are responsible for predicting (or listening to someone who can) the path of fire, logistically designating resources and optimizing those choices over a vector of possible priorities.
+
+--
+
+For us, since we are interested in the problem in a general sense, we can simplify this down into a few discrete choices applied at the cell-level.
+
+--
+
+Fire managers plan .hi-slate[actions] that will have an impact on specific cells, or decrease the rate of growth as dictated by rothermel model (water/chemicals slows down convection, removal of fuel halts fire advance).
+
+--
+
+.less-right[- Resources come from a common pool through what's known as the **G**eographic **A**rea **C**oordination **C**enter, **GACC**
+
+- fire suppression isn't a market with efficient prices - shortages can occur.]
+
+&lt;img src="map_national.png" style="width: 50%", class="center"/&gt;
+
+
+
+
+
+
+---
+# Bayham Yoder
+
+In general, fires grow all at once and then die out slowly, so we can treat this as a two period model, a la Yoder and Bayham, 2020, dropping the negotiation portion between GACC and manager.
+
+--
+
+Bayham Yoder: Fire manager agents solve constrained maximization problem, where GACC observes `\(\lambda\)` from the lagrangian and uses it to determine need. GACC solves resource constraints.
+
+ - Period 1. Fire Managers observe initial conditions and make a bulk order to optimize `\(E[C(\cdot)-NVC_{g,f}(\cdot)]\)`, where resources can be used to produce actions on a grid.
+
+ - In this framework, **GACC** serve as a menu of resources with prices dictated by pre-existing contracts, rather than a resource optimizaer.
+ 
+--
+ 
+For the data I have, this seems to line up with what I've observed more closely than a **GACC** that centrally optimizes resource dispatches (should see more binding results, especially in 2020)
+
+- minimal transfer of resources - 1 bulk order and done.
+
+- Very few resource requests that take longer than a day to complete/fill from request time to arrival time.
+
+### Examples?
+
+
+---
+class: clear
+
+### Holiday Farm Fire
+
+&lt;img src="HolidayFarmFire.jpeg" style="width: 90%", class="center"/&gt;
+
+.footnote[From inciweb]
+
+---
+class: clear
+
+### Tamarack Fire
+
+&lt;img src="tamarack.jpeg" style="width: 90%", class="center"/&gt;
+
+.footnote[From inciweb]
+---
+# Home Values
+
+## Hedonic Portion
+
+Doing hedonic regression for wildfire is notoriously problematic.
+
+--
+
+- No repeat sales during event
+
+--
+
+- Event has negative impacts on amenities
+
+--
+
+- We can save ourselves by trying to partial out all related variation in home prices.
+
+--
+
+Note: I follow most fire literature and use median home price by tract to estimate property values in distance bands from point of ignition.
+
+---
+# Home Values
+
+The model for housing prices fairly baseline. For individual i buying a home in cell positioned at `\((x,y)\)`
+
+`$$Value_{x,y,i} = g(v_{x,y,i}, b_{x,y,i}, \gamma_i) + \varepsilon_i$$`
+Where `\(g\)` is a function of...
+
+viewshed amenities `\(v_{x,y,i}\)` which is produced through a spatial kernel weighting of surrounding cells, based on their content and intervening topology
+
+"Backyard" amenities `\(b_{x,y,i}\)` that are a kernel weighting of cells, based on accessibility from the home
+
+--
+
+`\(\varepsilon_i\)` is an additively separate error term that factors in non-environmental amenities (such as school quality) and `\(\gamma_i\)` is a term that captures individual preferences for different viewsheds and backyard amenities.
+
+---
+# Home Values
+
+Then, expected value, conditional on tract membership is
+
+`$$E[Value_{x,y,i}|Block = t] = E[g(v_{x,y,i}, b_{x,y,i}, \gamma_i)|Block = t] + c_t$$`
+
+The error term decomposes into its block-level mean because it is additively separable and not dependent on spatial location.
+
+So long as `\(\exists\ c_t\ s.t. c_t \neq 0\)`, estimating through D/DML should produce meaningful results.
+
+---
+class: inverse, middle
+
+# Structural Causal Model
+
+---
+class: clear
+
+&lt;img src="dagitty-model(1).jpg" style="width: 100%", class="center"/&gt;
+
+
+---
+class: clear
+
+&lt;img src="dagitty-model(2).jpg" style="width: 100%", class="center"/&gt;
+
+---
+class: clear
+
+&lt;img src="dagitty-model(3).jpg" style="width: 100%", class="center"/&gt;
+
+---
+class: inverse, middle
+
+# Machine Learning
+
+---
+# Problem space (Lots of Data)
+
+Luckily - We have just the data to do this job.
+
+--
+
+We need data to, at a minimum, control for all variation in fuels, changes in vegetation health, weather variables (moisture, temperature and wind), other valued
+
+--
+
+__IRWIN__: Integrated-Reporting of Wildland-Fire Information
+
+Data was cleaned by finding unique fire identifiers in the public-facing  __IRWIN__ database, with ignition point locations, dates, number of personnel and resource assignment available publicly through ESRI.
+
+- Includes all data used by the forest service for tracking fires, including text descriptions of what is going on day by day in the fire.
+
+--
+
+These point locations were checked for broad-scale accuracy, and after removing wildfires costing less than 10 dollars along with those with reported acreages under 1 acre, left with 1750 fires from January of 2020 to June 25th of 2021.
+
+--
+
+Honestly - as with any project, this portion was a bulk of the work.
+
+---
+#Spatial Inputs
+
+- Landfire spatial data - inputs to fire simulation models will be used for topography and fuels, as well as identify locations with recent logging. LOTS.
+
+Canopy Bulk Density,  Canopy Cover, Canopy Base Height, Fuel Vegetation Height, Existing Vegetation Cover,Fuel Vegetation Cover, Fuel Disturbance, Elevation, Slope, Aspect, Vegetation Departure Index, F40 fuel model
+
+--
+
+- WFDSS spatial data - inputs for on-the-ground support and location information on other values at risk - valid for 2020 and 2021. 
+
+Includes rate of travel (in mph), private vs. public land, location of communication towers (cell towers)
+
+--
+
+- IRWIN data, for suppression costs, GACC, point location of fire and ignition/response date. 
+
+Can cross verify the actual suppression costs now!
+
+--
+
+- Barymetric Population grid, created by Xiao Huang et al (2020) using census population data and mapping the block level population to a 100x100m grid for CONUS based on the Microsoft Building data.
+
+- Forest service circa 2016 FSIM outputs, including burn probability and probabilities of various flame intensities (class 1-6) in 270x270m grid.
+
+--
+
+Weather data, including wind direction and speed (10m), daily moisture anomaly and max temperature come from NCEP-NCAR and NWS.
+
+In total, 30 raster inputs, and an extra "distance from ignition" custom raster - total, 31 deep raster brick (!!!)
+
+---
+# Machine Learn?
+
+Need a machine learning or statistical algorithm that can both 
+
+1.) encode *possible* adjacencies that are both *data driven* and *spatially driven* at the same time, 
+
+- ie, when a cell has tree cover and long conditional flame lengths, it will need to pass potential risk information to non-adjacent cells for aggregation, but without the canopy cover it will not.
+
+--
+
+2.) Function across multiple spatial kernels at the same time 
+
+- ie, home prices are determined by viewshed (first kernel) and backyard (second kernel). Need way to have homes 'accumulate' information across both weighting schemes at the same time.
+
+--
+
+.hi-orange[Big ask.] Especially for 1750 observations.
+
+--
+
+Though they struggle with small N data (this counts), all of the causal mechanism I have described are extremely close to a basic attention mechanism.
+
+.hi[Enter, ViT] *(CCT, to be specific)*
+
+---
+# Attention Crash Course
+
+&lt;img src="AttentionMechanism.png" style="width: 90%", class="center"/&gt;
+
+Inputs are multiplied by learnable weights into three matrices **Queries** **Keys** and **Values**.
+
+--
+
+The idea here is the dot product of two vectors that are quite similar produce a large value, two vectors that are quite different will produce a small one.
+
+--
+
+In the example above, imagine a case with three inputs with 4 variables each. Taking the dot product of the first datapoint (row) and itself will produce a very large number.
+
+--
+
+If you rescaled those dot products to sum to 1, you could use those values as 'similarity' scores. 
+
+--
+
+Now, if you imagine a weighted version, your 'queries' can produce a signal that will accumulate information, and the keys will produce a signal that could usefully pass information, by matching input keys. Values allow the input to pass weighted (by the signal described above) as combinations of its inputs as output.
+
+---
+# Inputs
+
+But these inputs are rasters!
+
+--
+
+We can slice these rasters into 'patches' or chunks of a fixed size, rearrange them into a 1-dimensional vector and then project them onto some smaller dimensional vector to use them as an input for the mechanism above.
+
+--
+
+We can also pre-process the patches using a convolutional neural network - CCT. Doing this has been shown to perform better with few parameters needed in a model (good for memory) and in smaller data contexts (good for the setting.)
+
+--
+
+Let's look at the data
+
+---
+# Holiday Farm Fire
+
+.center[&lt;img src="HolidayFarm.png" style="width: 60%", class="center"/&gt;]
+
+Raster bricks are 31 layers deep of 30x30m resolution. They are 30kmx30km, with a central cell, which results in a dimension size of 1001x1001.
+
+---
+# One 'input'
+
+.more-left[&lt;img src="HolidayFarmPatch.png" style="width: 60%", class="center"/&gt;]
+
+.less-right[- *Hint* The upper right hand corner of prior slide
+
+- Patches have a context of 20x20 (26 if you count the convolution) cells, or .6x.6 km. This input would be processed through a convolutional layer, with a stride of 1 and a 12x12 kernel first.]
+
+--
+
+.more-left[Visible inputs at the moment are Imperviousness (.hi-red[red]), elevation, (.hi-blue[blue]), and Vegetation disturbance (.hi-green[green])]
+
+---
+# Process
+
+Processing the image like this 'digests' the image into a spatial sequence of 250 patches of 20x20x31.
+
+--
+
+The problem is those patches above have no idea about 'space'. Solved three ways -
+
+- Convolution provides information about neighboring patches
+
+- Used Rotary Embeddings for 2D inputs, as described by RoPE (2021).
+
+- Added a special raster layer that encodes distance from the center of the image (from 0-1).
+
+--
+
+Luckily, almost all of the extrema of the inputs are known, so no need to worry about excluding test set for normalization 🥳
+
+---
+# Tabular Inputs &amp; Regularization
+
+For those inputs that are not directly related to space, such as responsible GACC and hours from ignition to response, those are included in a separate tabular input after the attention mechanism.
+
+--
+
+I have to be careful - this makes the neural network 'multi-modal.'
+
+--
+
+Working with data this small **requires** extensive data transformations to prevent overfit - but tabular data is difficult to transform.
+
+--
+
+Rely on mixup regularization - intersperse the natural rasters, tabular data and targets with convex combinations of all three.
+
+- ie, train on raster 1 `\(\rightarrow\)` output 1, raster 2 `\(\rightarrow\)` output 2 and `\(\alpha\)`*raster 1 + `\((1-\alpha)\)`raster 2 `\(\rightarrow\)` `\(\alpha\)` output 1 + `\((1-\alpha)\)`output 2
+
+--
+
+In addition, used coarse dropout, dropout, L2 regularization, random rotations (up to 15 degrees), and 5-cell masking or padding around the edge of the image.
+
+---
+# Model Diagram
+
+.cent[&lt;img src="ModelDiag.png" style="width: 80%", class="center"/&gt;]
+
+.center[*MLP: Multi-layer perceptron - ie, classic neural network*]
+
+---
+# Back to Metrics
+
+Now that we've covered that theory - let's incorporate it into our PLR format from above.
+
+Assume: `\(\frac{pw}{acres} = f(X, Property\ Values, \varepsilon, grid = gr)\)` so that...
+
+`$$log(\frac{cost}{acre}) = f_l(X_{f,gr}) + \theta log(Property\ Value\ 20km) +  log(\varepsilon_f)$$`
+
+`$$log(Property\ Values_f) = g(X_{f,gr}) + log(E(c_t))$$`
+
+--
+
+Prior work assumes
+
+`$$log(\frac{cost}{acre}) =  \sum^j\beta_jlog(X_f) + \theta log(Property\ Value\ 20km) +  log(\varepsilon_f)$$`
+
+`$$log(Property\ Values_f) = \sum^j\beta_jlog(X_{f,j}) + log(E(c_t))$$`
+
+So how to do this? 
+
+--
+
+.hi[back to DML]
+
+---
+# D/DML - Assumptions
+
+## In general -
+
+D/DML will converge at a rate of `\(\sqrt{n}\)`, with three biases - part 1 and 3 are not interesting here, but 2 is.
+
+--
+
+`\(b^* = E(log(Property\ Values_f) - g(X_{f,gr}))^{-2}\frac{1}{\sqrt{n}}\sum_{i \in I}(\hat{g(x)} - g(x))(\hat{f_l(x)} - f_l(x)))\)`
+
+**Assumption 1)** This term converges to 0 in probability, only if the estimators converge to their estimates out of sample at reasonable rates. `\(o(\frac{1}{N^{1/4}})\)`) rates.
+
+I don't know this to be true. Have to assume.
+
+--
+
+From this, can use MoM with one of two neyman orthoganal moment conditions
+
+1.) `\(E[[Y - (Price - g(x))*\theta - f_l(X)][Price -g(x)]] =0\)`
+
+2.) `\(E[[Y - Price*\theta - f_l(X)][Price -g(x)]] =0\)`
+
+
+---
+# Model Information
+
+the main concern for me was fitting this guy into video memory - and made more choices regarding structure than I'd like to admit
+
+--
+
+Computation was performed on a Nvidia RTX3090, with 24GB of video memory and 64GB of physical memory, over 150 epochs
+
+data split into 10 folds
+
+Used AdamW optimization strategy with learning rate = 2.5e-5, weight decay 2.5e-6
+
+warmup strategy - cosine annealing with 2000x initial warmup steps(4 epochs), SeLU activation throughout
+
+--
+
+- mini batch size of 5 fires per step
+
+- Convolution Kernel 12x12, stride 1, followed by adaptive max pool to shrink brick to 500x500x100 (2x2)
+
+- patched to 10x10x100 - project patch to embedding of dimension 3000
+
+--
+
+- 5 layers of attention with three heads, dimension of 500 per head, embedding dropout of 1%
+
+- mean pool heads
+
+- concat data to tab inputs -&gt; MLP dim 600
+
+- mlp out - loss calculated from SSE in minibatch.
+
+---
+# Results - Original
+
+.bigger[I compared my results from this model to two different outcomes.
+
+1.) Original results from Gebert, 2007
+
+2.) Re-estimation of results, using methods from Gebert 2007 on 2020-2021 data.]
+
+--
+
+.bigger[Original - Coef Log(Housing Value within 20km) only on large fires
+
+- .hi[.1131], SE - not reported, but p-value = 0.00
+
+- OOS .hi[Rsquared of .18] in the west, .11 in the east]
+
+---
+# Results
+
+&lt;img src="gebert2007table.png" style="width: 75%", class="center"/&gt;
+
+---
+# Results II
+
+.bigger[DML - Coef Partialed out MoM estimator. Alone
+
+- .hi-orange[.03817], 95% - CI = .hi-orange[[-.02577, .1021]] 
+
+- OOS .hi-orange[R-squared of .36], without relying on property values]
+
+--
+
+.bigger[DML - Coef Pseudo-instrument MoM estimator
+
+- .0138, estimate, jacobian explodes (no CI) - don't like that.]
+
+---
+# Results III
+
+.bigger[Results from 2020-2021 data (including small fires) appear to have even stronger effects from the 20km bound around the ignition point]
+
+--
+
+.bigger[**Caveats** - Firefighting has changed substantially - so I made some changes to the original model. Unified East and West US, kept all relevant variables from both sides. Replace forest region with GACC (firefighting isn't as USFS focused as it once was.)]
+
+--
+
+.bigger[- Coef .hi-purple[.1606, SE = .0322]
+
+Other coefficients seem to change as well though - as resources dwindle (more firefighters assigned to other fires) costs increase
+
+Maybe this is due to Covid? Fewer firefighters of last resort? Not sure.]
+
+--
+
+.bigger[OOS R-squared - not worth mentioning.]
+
+---
+# Discussion &amp; What I need to do
+
+The evidence, so far, is pointing towards a considerably smaller effect from the 20km property band proxy used by Gebert et al and others
+
+--
+
+Lots of policy implications here. Much easier to argue for zoning laws if higher prices drive up suppression costs.
+
+--
+
+## Left to do:
+
+### Lots
+
+- re-estimate the original model separating eastern and western models to get updated regression estimates
+
+- estimate the remaining 9 folds for DML to get better (and tighter) estimates. Relying on 1 fold may be misleading.
+
+- Check heteroskedasticity (?) In this context, hard to measure because it gets mixed up with model measurement error.
+
+- Perform some degree of ablation tests. Maybe on Data? Maybe on rotary embeddings?
+
+
+---
+exclude: true
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

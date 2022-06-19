@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Revisiting the stratified cost index</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Connor Lennon" />
+    <link href="5-slide-deck-SCI-2-nopause_files/remark-css/default.css" rel="stylesheet" />
+    <link href="5-slide-deck-SCI-2-nopause_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="5-slide-deck-SCI-2-nopause_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Revisiting the stratified cost index
+## 5 (+5) slide deck
+### Connor Lennon
+### Fall 2021
+
+---
+
+class: inverse, middle
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+&lt;/style&gt;
+
+
+# Speed-trial
+
+---
+class: clear
+
+&lt;img src="headerslide.jpeg" style="width: 110%", class="center"/&gt;
+
+.footnote[*McCash fire, threatening California Seqouia: Inciweb, September 16, 2021*]
+
+&lt;br /&gt;
+
+.center[.bigger[Over the last ten years, the US has spent .hi[21.4] billion 2010 dollars on fire suppression]]
+
+.center[.bigger[Is this the correct amount? .hi-orange[How would we know?]]]
+
+---
+class: clear
+
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /&gt;
+### Fires are getting more expensive to fight as time goes on
+
+---
+# [2] What is .hi-orange[causing] these higher costs?
+
+What makes fires .hi-slate[more] or .hi-slate[less] expensive to suppress in the first place?
+
+Big concern of public policy is an observed link between .hi-orange[property values] and expense of fires
+
+Understanding of mechanisms behind variation in .hi[cross-sectional] suppression expenditures (eg, fuel, elevation, water) crucial.
+
+.pull-right[Also a dynamic time component. Which paths a fire could take impact expected costs. Suppression decisions impact actual paths AND costs, and expected paths affect suppression decisions, homes at risk and costs. **Simultaneity** problem]
+
+.pull-left[
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /&gt;
+]
+---
+# [2] Government &amp; Suppression
+
+
+
+&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+
+.center[**Policy failure**]
+.smallest[*"Wildland fires constitute a major crisis in American environmental policy, a crisis created by a longstanding policy failure."* - Busenburg, 2004 RPR]
+
+---
+# [2] Government &amp; Suppression
+
+Some evidence in existing literature that this money disproportionately benefits the wealthy. .hi-slate[*]
+
+.footnote[.hi-slate[*]: See Wibbenmeyer, WP or Boomhower &amp; Baylis, 2020]
+
+Expensive private homes in WUI are prone to fire risk. 
+
+- Expensive homes are owned by wealthier individuals
+
+- Those at-risk homes benefit more from suppression dollars than cheaper, less-at-risk homes
+
+This is .hi-orange[extremely regressive!]
+
+Fire suppression is essentially a multi-billion dollar home-insurance underwriting program for wealthy individuals.
+
+---
+# [3] Outline
+
+.hi-slate[Research goal:] decompose the fire manager's problem.
+
+.hi-slate[*Q&lt;sub&gt;1&lt;/sub&gt;*] Do fire managers **actually** preferentially assign resources to fires near more expensive properties?
+
+.hi-slate[*Q&lt;sub&gt;2&lt;/sub&gt;*] Or...  just correlation between fire suppression and property values due to physical attributes common to expensive properties and higher suppression costs.
+
+.hi[Methods]: Double/Debiased Machine Learning 
+
+- Uses **CCT** to model nuisance functions `\(\eta = \{g(x), f(x)\}\)` 
+
+- Produces causal estimates of property value on fire suppression costs, conditional on machine learned fire risk attributes
+
+---
+# [3] Example: Lake Tahoe
+
+.center[.slate[*Q*:] Does Fire 1 get more resources than fire 2 or 3?]
+
+&amp;nbsp; **Fire 1**   &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;&amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;  &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;    **Fire 2** &amp;nbsp;  &amp;nbsp;  &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp;  &amp;nbsp; &amp;nbsp;   &amp;nbsp; &amp;nbsp; **Fire 3**
+
+&lt;img src="fireband.jpeg" style="width: 190%", class="center"/&gt;
+
+.center[.slate[*Follow up Q*]: Is it because Lake Tahoe has more expensive homes?]
+
+All: Near lakes and Threaten some homes
+
+
+---
+# [4] Research Question
+
+### Do higher property values cause higher supp. costs?
+
+
+
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/probfig-1.png" style="display: block; margin: auto;" /&gt;
+---
+# [4] Basic Hedonics
+
+### We know environment plays role in housing prices
+
+
+
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/prob2fig-1.png" style="display: block; margin: auto;" /&gt;
+---
+# [4] Basic Physics
+
+### Well known environment plays role in fire risk
+
+
+
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/prob3fig-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# [4] Fire Manager Info Set
+
+### Fire Manager Pre-plans actions
+
+
+
+&lt;img src="5-slide-deck-SCI-2-nopause_files/figure-html/prob4fig-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: clear
+&lt;img src="zillow-neighbors3.png" style="width: 95%", class="center"/&gt;
+
+.hi[Q:] What do we need to identify how much of .hi-slate[home 1 or 2's] prices comes from risk-correlated amenities?
+
+.hi[&amp;#x2611;] .hi-slate[GOAL:] Disentangle the physical components of expected fire suppression costs from the human/bias-driven tendency to protect expensive property.
+
+.hi[A:] We'd need an algorithm that can simultaneously combine short and long-distance dependencies of amenity sets on... elevation, fuels, water-features, telephone, etc. .hi-orange[Enter ViT] (Really **CCT**)
+
+---
+# [5] Basics of D/DML
+
+.smaller[Can't just use ML OR OLS in a causal pipeline without thought (particularly one with simultaneity bias). Based on SCM, need to control for all variables]
+
+.smaller[**But** those variables represent millions of pixels per fire, at a minimum. Need to learn the data **manifold**]
+
+.smaller[**D/DML** allows us to use out of sample estimates from a ML algorithm to estimate a causal effect property val. on suppression, controlling for lower-dimensional functions of X.]
+
+--
+
+
+
+`$$\theta \equiv param\ of\ interest,\ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}$$`
+`$$Supp = \theta H.P + g(X) + \varepsilon_1$$`
+`$$H.P = f(X) + \varepsilon_2$$` 
+`$$\eta_0 = \{\hat{f}(X), \hat{g}(X)\}$$`
+
+---
+# [5] My methods
+
+Collect raster data on .smaller[fuels, historic fires, .smaller[elevation, summed home values (block level)]], .smaller[.smallest[weather, communication towers, .smallest[accessibility level]]]... etc (31 different raster inputs!)
+
+.smaller[Use double-debiased ml with a **vision transformer** on 1750 fires over the 2020 and 2021 fire seasons]
+
+.smaller[- estimate the causal effect of 20km radius property values on suppression costs. (so far)]
+
+--
+
+.smaller[Turns out: .hi[point estimates] miss a lot of the important variation in fuels, elevation and amenity sets that may pollute estimates.]
+
+.smaller[Prelim results: .hi-orange[.03817], 95% - CI = .hi-orange[[-.02577, .1021]] vs. original estimate of .hi-slate[[.1131]]]
+
+--
+
+.smaller[Repeating original procedure on my fire data - .hi-slate[[estimate = .1606, SE = .0322]]]
+
+---
+# [6] Work to do
+
+**Presentations** - need to work on this. Plan to present at economic micro group and metrics group
+
+**Drafts** - an early draft done by mid october. I hope to circulate this draft to my committee, and have offers to get feedback from Matthew Wibbenmeyer and Margaret Walls. Depending on feedback, third draft, followed by final draft.
+
+**Defended** April 1st, 2022.
+
+---
+# [6] Work to do
+
+Need to run full model on all 10 folds (as of now, only applied to one fold, but results are strong)
+
+--
+
+Potentially repeat procedure for building-assigned income by tract? If of interest.
+
+--
+
+Likely useful to do some degree of ablation tests for my version of CCT.
+
+--
+
+Others?
+
+---
+exclude: true
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

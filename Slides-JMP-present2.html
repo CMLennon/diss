@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Revisiting the SCI: Legacy of Property Values in Suppression Cost Estimation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Connor Lennon" />
+    <script src="Slides-JMP-present2_files/header-attrs-2.11/header-attrs.js"></script>
+    <link href="Slides-JMP-present2_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="Slides-JMP-present2_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="Slides-JMP-present2_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css-2.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Revisiting the SCI: Legacy of Property Values in Suppression Cost
+Estimation
+### Connor Lennon
+### Spring 2022
+
+---
+
+exclude: true
+#class: inverse, middle
+
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+
+.hide-count .remark-slide-number {
+  display: none;
+}
+&lt;/style&gt;
+
+
+
+---
+class: inverse, middle
+
+# Introduction
+
+---
+class: clear
+
+&lt;img src="retardant-drop-sq.jpeg" style="width: 110%", class="center"/&gt;
+
+.center[.smaller[*McCash fire, threatening California Seqouia: Inciweb, September 16, 2021*]]
+
+.center[Unlike other natural disasters, damage from wildfire can be prevented by increasing .hi-orange[suppression effort]]
+
+.footnote[.hi-orange[Suppression costs/effort:] *costs paid/effort exerted by government to prevent damage during a fire*]
+
+--
+
+.center[This allows for risk-abatement investment to be evaluated as an in-budget tradeoff.]
+
+.center[Suppression costs over the last ten years: .hi-orange[$21.4 billion]] 
+
+---
+
+# Rising Costs: Missed Opportunities?
+
+
+
+
+
+&lt;img src="Slides-JMP-present2_files/figure-html/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+# Research Goal
+
+**Problem:** How can we estimate the wildfire suppression cost function?
+
+--
+
+ Currently: FS uses the .hi-orange[Stratified Cost Index (SCI)] which predicts historically-normed per-acre suppression cost elasticities.
+ 
+ - Uses ignition point DEM, fuel model, and total property value within 20km in log-log OLS framework.
+ 
+ 
+--
+
+**1.** Is property .hi[value] a meaningful causal factor in fire suppression effort/costs?
+
+**2.** If not, what are the consequences of using this variable in the cost function on estimated cost? 
+
+ - does using it to produce historic benchmarks for fire managers bias their resource assignments towards wealthier/denser areas?
+
+---
+# Stratified Cost Index, Background
+&lt;br&gt;
+Historically, wildfire suppression costs went *unmonitored.*
+
+--
+
+The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a group of economists under the Bush admin to correct this gap. Big econometric (and accounting project.)
+
+**SCI** addresses need: time-invariant (ignoring inflation) cost predictions of wildfire.
+
+--
+
+ - **Idea**: Rather than perform cost-benefit analysis, the **SCI** provides historic context for fire suppression costs, given local features (fuels, elevation and .hi[property values]) relevant to fire spread and costs.
+
+**SCI Approach:** train an OLS model using features derived from the *point of ignition* and *relevant to fire spread/local assets at risk* on historic fire suppression costs `\(\rightarrow\)` predict new wildfire expenditures.
+
+--
+
+ - .hi-black[Problem]: This procedure assumes spatial invariance, but are property values spatially invariant?
+
+---
+# Solution
+
+.center[Use .hi-black[D]ouble/.hi-black[D]ebiased .hi-black[M]achine .hi-black[L]earning (.hi-black[D/DML]) to learn a **non-spatially-invariant** kernel that weights high-dimensional pre-fire environmental variables into best-predictor of fire costs]
+
+.center[.hi-black[Entire field of ML] has techniques adaptable to this problem: Computer Vision]
+
+--
+
+.pull-left[
+- .smaller[Use .hi-black[C]ompact .hi-black[C]onvolutional .hi-black[T]ransformer (.hi-black[CCT]), to reduce dimensions of the spatial problem, treating predictions of fire cost as confounders in a regression model (using rasters as channel inputs e.g., Slope, Fuels, Canopy Cover, Accessibility ...)]
+
+]
+
+
+.pull-right[
+
+**Example:** CZU Complex (2020) Raster
+
+&lt;img src="CZUComplex2020.png" style="width: 60%", class="center"/&gt;
+
+]
+
+.smaller[**Goal**: Produce causal estimates of property value on fire suppression costs, controlling for machine-learned fire risk attributes]
+
+---
+# Research
+
+&lt;br&gt;
+
+.center[**Headline Results**]
+
+__1.__  Spatially Corrected Estimates? **Result:** - **Much** less important than previously estimated. .01% vs. .11% (.16% on data available) increase in suppression costs per percentage point increase in nearby property values (log-log estimate.)
+
+--
+
+__2.__ Improve the SCI? **Result:** Not just the SCI. Beats even regression models with full perimeter information. Improves `\(R^2\)` from 60% (In sample) (35-60%) `\(\rightarrow\)` 85% out of sample, and extends to fires previously considered 'too small' for cost forecasts.
+
+--
+
+__3.__ Legacy of SCI? **Result:** Using a D/DML RDD, around a 'mandatory cost estimation' threshold (300 acres)- exists evidence that cost-monitoring increases sensitivity of fire managers to property values
+
+
+
+---
+# Data
+
+.center[1750 wildfires, 2020-2021 summer]
+
+.center[Eventual OOD test - 3150 wildfires, 2020-2022]
+
+.center[&lt;img src="GACCMap.png" style="width: 100%", class="center"/&gt;]
+
+---
+# Data
+
+.center[1750 wildfires, 2020-2021 summer]
+
+.center[Eventual OOD test - 3150 wildfires, 2020-2022]
+
+.center[&lt;img src="RegionalSuppressionCosts.png" style="width: 100%", class="center"/&gt;]
+---
+# Fitting
+
+Model predictably underestimates highs and overestimates lows
+
+.center[&lt;img src="firecostfit.png" style="width: 100%", class="center"/&gt;]
+---
+# Crossfitting
+
+However, in general the errors in each model are small when the companion prediction errors are large
+
+.center[&lt;img src="crossfit.png" style="width: 100%", class="center"/&gt;]
+
+---
+class: clear
+
+.center[&lt;img src="results.png" style="width: 90%", class="center"/&gt;]
+
+---
+# SCI and Income More Correlated?
+
+&lt;br&gt;
+
+We can use correlation between reported `\(SCI\)` final costs and the `\(SCI_{nn}\)` final costs to see if conditioning predictions directly on property value leads to predicted costs that are more correlated with income.
+
+`$$H_0: corr_1(SCI, Income_{20km}) &lt;= corr_2(SCI_{nn}, Income_{20km})$$`
+
+--
+
+`$$p(H_0|corr_1 = .10, corr_2 = .03, n = 424) \approx 0.029$$`
+--
+
+Tests on correlation between **property value, per-capita income and summed income** also reject in equivalent tests.
+
+--
+
+.hi[Hard to interpret:] know that the CCT forecast pearson coefficient is smaller, but no guarantee of better outcomes.
+
+---
+# Do Fire Managers Respond to Costs?
+
+.center[&lt;img src="RDD.png" style="width: 100%", class="center"/&gt;]
+
+
+---
+
+# Conclusion
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+ - Once adjusting for non-invariant environmental factors, .hi[property values] appear to have an extremely small (insignificant) effect on suppression costs
+ 
+--
+
+ - Some evidence that .hi-orange[fire managers] respond to this modeling choice, and has some impact on behavior.
+
+--
+
+- Model proposed here is significantly less correlated with per-capita income, summed income and total property value near the point of ignition.
+
+---
+# Thank you!
+
+---
+# Sources
+
+.smallest[Suppression costs, https://www.nifc.gov/fire-information/statistics/suppression-costs, 2020.
+
+Abatzoglou, J. T., J. K. Balch, B. A. Bradley, and C. A. Kolden, Human-related ignitions concurrent with
+high winds promote large wildfires across the USA, International Journal of Wildland Fire, 27(6), 377,
+doi:10.1071/wf17149, 2018.
+
+Abt, K. L., J. P. Prestemon, and K. M. Gebert, Wildfire Suppression Cost Forecasts for the US Forest Service,
+Journal of Forestry, 107(4), 173–178, doi:10.1093/jof/107.4.173, 2009.
+
+Albini, F. A., Spot fire distance from burning trees-a predictive model, Intermountain Forest; Range Experiment
+Station, Forest Service, U.S. Dept. of Agriculture, 1979.
+
+Alexander, M. E., and M. G. Cruz, Limitations on the accuracy of model predictions of wildland fire behaviour:
+A state-of-the-knowledge overview, The Forestry Chronicle, 89(03), 372–383, doi:10.5558/tfc2013-067,
+2013.
+
+Bayham, J., and J. K. Yoder, Resource allocation under fire, Land Economics, 96(1), 92–110, doi:10.3368/le.
+96.1.92, 2020.
+
+Baylis, P., and J. Boomhower, Moral hazard, wildfires, and the economic incidence of natural disasters, Tech.
+rep., doi:10.3386/w26550, 2019.
+
+
+]
+---
+# Sources
+
+.smallest[
+
+Boychuk, D., W. J. Braun, R. J. Kulperger, Z. L. Krougly, and D. A. Stanford, A stochastic forest fire growth
+model, Environmental and Ecological Statistics, 16(2), 133–151, doi:10.1007/s10651-007-0079-z, 2008.
+
+Bronstein, M. M., J. Bruna, T. Cohen, and P. VeliÄkoviÄ, Geometric deep learning: Grids, groups, graphs,
+geodesics, and gauges, 2021.
+
+Buma, B., S. Weiss, K. Hayes, and M. Lucash, Wildland fire reburning trends across the US west suggest only
+short-term negative feedback and differing climatic effects, Environmental Research Letters, 15(3), 034,026,
+doi:10.1088/1748-9326/ab6c70, 2020.
+
+Busenberg, G., Wildfire management in the united states: The evolution of a policy failure, Review of Policy
+Research, 21(2), 145–156, doi:10.1111/j.1541-1338.2004.00066.x, 2004.
+
+Butry, D. T., M. Gumpertz, and M. G. Genton, The production of large and small wildfires, pp. 79–106,
+Springer Netherlands, doi:10.1007/978-1-4020-4370-3_5, 2008.
+
+Calkin, D. E., T. Venn, M. Wibbenmeyer, and M. P. Thompson, Estimating US federal wildland fire managers’
+preferences toward competing strategic suppression objectives, International Journal of Wildland Fire, 22(2),
+212, doi:10.1071/wf11075, 2013.
+]
+---
+# Sources
+
+.smallest[
+Chen, X., and H. White, Improved rates and asymptotic normality for nonparametric neural network estima-
+tors, IEEE Transactions on Information Theory, 45(2), 682–691, doi:10.1109/18.749011, 1999.
+
+Donovan, G. H., P. Noordijk, and V. Radeloff, Estimating the impact of proximity of houses on wildfire
+suppression costs in oregon and washington, in In: 2004. Proceedings of 2nd Symposium on Fire Economics,
+Planning and Policy: A Global View, 2004.
+
+Dosovitskiy, A., et al., An image is worth 16x16 words: Transformers for image recognition at scale, 2021.
+Farrell, M. H., T. Liang, and S. Misra, Deep neural networks for estimation and inference, Econometrica, 89(1),
+181–213, doi:10.3982/ecta16901, 2021.
+
+Finney, M. A., Fire growth using minimum travel time methods, Canadian Journal of Forest Research, 32(8),
+1420–1424, doi:10.1139/x02-068, 2002.
+
+Finney, M. A., An overview of flammap fire modeling capabilities, in In: Andrews, Patricia L.; Butler, Bret
+W., comps. 2006. Fuels Management-How to Measure Success: Conference Proceedings. 28-30 March 2006;
+Portland, OR. Proceedings RMRS-P-41. Fort Collins, CO: US Department of Agriculture, Forest Service, Rocky
+Mountain Research Station. p. 213-220, vol. 41, 2006.
+
+]
+---
+# Sources
+.smallest[
+Florec, V., M. P. Thompson, and F. R. y Silva, Cost of suppression, pp. 1–11, Springer International Publishing,
+doi:10.1007/978-3-319-51727-8_96-1, 2019.
+
+Gebert, K. M., and A. E. Black, Effect of suppression strategies on federal wildland fire expenditures, 110(2),
+65–73, doi:10.5849/jof.10-068, 2012.
+
+Gebert, K. M., D. E. Calkin, and J. Yoder, Estimating suppression expenditures for individual large wildland
+fires, Western Journal of Applied Forestry, 22(3), 188–196, doi:10.1093/wjaf/22.3.188, 2007.
+
+Gorte, R., and H. Economics, The rising cost of wildfire protection, Headwaters Economics Bozeman, MT, 2013.
+Griliches, Z., Hedonic price indexes for automobiles: An econometric of quality change, in The Price Statistics
+of the Federal Goverment, pp. 173–196, National Bureau of Economic Research, Inc, 1961.
+
+Gude, P. H., K. Jones, R. Rasker, and M. C. Greenwood, Evidence for the effect of homes on wildfire
+suppression costs, International Journal of Wildland Fire, 22(4), 537, doi:10.1071/wf11095, 2013.
+
+
+
+]
+---
+# Sources
+
+.smallest[
+
+Hand, M. S., K. M. Gebert, J. Liang, D. E. Calkin, M. P. Thompson, and M. Zhou, Economics of wildfire man-
+agement: the development and application of suppression expenditure models, Springer Science &amp; Business
+Media, 2014a.
+
+Hand, M. S., K. M. Gebert, J. Liang, D. E. Calkin, M. P. Thompson, and M. Zhou, Regional and temporal
+trends in wildfire suppression expenditures, in Economics of Wildfire Management, pp. 19–35, Springer,
+2014b.
+
+Hand, M. S., M. P. Thompson, and D. E. Calkin, Examining heterogeneity and wildfire management
+expenditures using spatially and temporally descriptive data, Journal of Forest Economics, 22, 80–102,
+doi:10.1016/j.jfe.2016.01.001, 2016.
+
+Pearl, J., 3. the foundations of causal inference, Sociological Methodology, 40(1), 75–149, doi:10.1111/j.
+1467-9531.2010.01228.x, 2010.
+
+Preisler, H. K., A. L. Westerling, K. M. Gebert, F. Munoz-Arriola, and T. P. Holmes, Spatially explicit forecasts
+of large wildland fire probability and suppression costs for california, International Journal of Wildland Fire,
+20(4), 508, doi:10.1071/wf09087, 2011
+]
+
+---
+# Sources
+
+.smallest[
+Wibbenmeyer, M., and M. Robertson, The distributional incidence of wildfire hazard in the western united
+states, WP, 2021.
+
+Yoder, J., and K. Gebert, An econometric model for ex ante prediction of wildfire suppression costs, Journal
+of Forest Economics, 18(1), 76–89, doi:10.1016/j.jfe.2011.10.003, 2012.
+
+]
+
+---
+class: inverse, middle
+
+# Appendix
+
+---
+# Do Fire Managers Respond to Costs?
+
+.center[&lt;img src="rddimg1.png" style="width: 90%", class="center"/&gt;]
+
+
+---
+# D/DML
+
+At its core, D/DML is just another Doubly Robust Estimation identification strategy.
+
+--
+
+.center[**Doubly Robust Estimation**]
+
+.pull-left[&lt;img src="double.png" style="width: 70%", class="center"/&gt;]
+
+.pull-right[&lt;br&gt;
+
+**Assumptions:**
+
+**1.** No unobserved confounding.
+
+**2.** Positivity: for continuous treatment, the conditional treatment density must be non-negative everywhere.
+
+**3.** No Bad Controls
+
+Source: [Python Causality Handbook](https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html)
+
+]
+
+---
+# D/DML
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+**Takeaway:** This method requires the same three 'intuitive' assumptions required from your stock-standard conditional outcome/propensity score model.
+
+**Idea:** Use existing causal information to encode dependencies, verified empirically by field experts/academic work.
+
+---
+# D/DML
+
+**Lots** of existing information on individual preferences for environmental amenities
+
+**Grounded and validated** model of wildfire spread and damage, used by forest service.
+
+Link these models to get a full SCM/DAG to identify a good control set. `\(\rightarrow\)` sufficient to identify our causal effect of interest.
+
+
+
+.pull-left[&lt;img src="ecosystemval.png" style="width: 100%", class="center"/&gt;]
+
+.pull-right[&lt;img src="mttfiremap.png" style="width: 90%", class="center"/&gt;]
+
+
+---
+# My Data
+
+To help control for spatial variation in risk, fuels, amenities - you name it, I pair 1750 wildfires taking place over the 2020 and 2021 wildfire seasons with two separate datasets.
+
+--
+
+.pull-left[
+.center[**1**]
+
+&lt;img src="CZUInputs.png" style="width: 70%", class="center"/&gt;
+]
+
+.pull-right[
+.center[**2**]
+.center[CSV-style data on Management]
+]
+---
+# Raster inputs
+
+**Inputs to Fire Spread/Spotting Models:**
+
+Canopy Bulk Density, Canopy Height, Canopy Base Height, Fuel Vegetation Height, Existing Vegetation Cover, Fuel Vegetation Cover, Vegetation Departure Index, 40 Class Fuel Model Distribution, Pre-response VIIRS detections, D.E.M. and derived attributes.
+
+**Inputs to Strategic Resource ID learning:**
+
+NLCD Imperviousness metric (LANDSAT measure of on-the-ground development), Protected Areas Database Membership, Private vs. Public Landownership, Communication/Cellphone Tower Locations, Average Travel/Evac Time (cell-level), Rasterized population grid
+
+**Inputs to Weather and Information Set:**
+
+Unconditional Burn Probability, Conditional Flame Length, Wind Speed (at time of ign.), Wind Direction, Total Precipitation over last 2 weeks, Estimated Soil Moisture, Drought Index.
+
+---
+# Tabular Inputs
+
+&lt;br&gt;&lt;br&gt;
+
+## Tabular Inputs are much Simpler
+
+Management Region (GACC), Reported Fuel Model, Hours between ignition and first response, total resources deployed Nationwide at time of initial response
+
+
+---
+# D/DML Meta-Models
+
+Using out-of-sample estimates from two customized **Neural Network** models performing nonlinear regressions of Property Values and Suppression Costs 
+
+
+`$$P(X_i) = f(\cdot): \text{Treatment Propensity/Treatment Intensity}$$`
+
+`$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+
+
+Where `\(X_i\)` is a set of tabular and raster controls.
+
+Estimate the following system of equations following Frisch Waugh Lovell (ish).
+
+For wildfire suppression effort `\(i\)`...
+
+`$$log(Suppression\ Costs_i) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+
+&lt;!--$$\small \theta \equiv param\ of\ interest, \ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}, \eta \equiv\{f(X_i),g(X_i)\}$$--&gt;
+
+Estimating `\(\theta\)` with linear estimators in this system of equations produces estimation error in `\(f\)` in equation (2) that may produce bias
+
+
+
+---
+# D/DML
+
+&lt;br&gt;
+
+__Q__ How is this different from controlling for regression inputs?
+
+--
+
+__A__ Buys independence from all functions of inputs that are estimatible by the machine learning model.
+
+**Regardless** of how fire managers respond to changes in fire risk/attributes, the model ought to capture that behavior so long as it is observed in the dataset and driven by causal logic.
+
+Remember - there is no certifiable evidence that our fire managers are behaving optimally. Only assumption - they face the same inputs/outputs as an 'optimal' fire manager
+
+---
+# D/DML
+
+&lt;br&gt;
+
+__Q__ How is this different from controlling for regression inputs?
+
+__A__ Buys independence from all functions of inputs that are estimatible by the machine learning model.
+
+**Important:** This is more than linear OLS specifications, but it's substantially less than everything.
+
+Implicit assumption - The estimation problem given to the ML model can converge to conditional outcome. 
+
+Bias/Variance Tradeoff here is much different calculus than in a traditional prediction problem:
+
+Takeaway - must ensure model is unbiased, at cost of higher variance. More than just *best predictor.*
+
+# Meta-learner
+
+.center[&lt;img src="CCTDiagModel.jpg" style="width: 73%", class="center"/&gt;]
+
+---
+# Problems
+
+Economists are always interested in 'who benefits' from the provision of any public good, but the .hi-orange[SCI] wasn't meant to do that.
+
+- One takeaway from SCI: fire suppression costs are **caused** in part by total nearby property value.
+
+ - Some researchers interpret .hi-orange[SCI] coefficients on 'sum of property values close to ignition' as **empirical** evidence of optimal suppression effort..super[.orange[*]]
+ 
+ .footnote[.hi[*]: Donovan et al, 2004, Abt 2009, Gude 2013, Hand 2014...]
+ 
+--
+
+Fortunately, wildfire suppression costs are likely valid under .hi[exchangability] and .hi-orange[counterfactual consistency] with a sufficient set of controls.
+
+--
+
+.hi-orange[SCI] controls for environmental and topological factors at point of ignition, so this is reasonable if no included variables' dgp is impacted by location. 
+--
+.hi[Property value] likely violates this assumption.
+
+
+---
+# Implicit Assumption of SCI: Invariance
+
+.hi-orange[Ignition point] predictions of wildfire costs `\(\implies\)` assuming .hi[invariance].
+
+Simplified example- imagine a featureless landscape with 1 neighborhood.
+
+--
+
+&lt;img src="Slides-JMP-present2_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+# Bias
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+This assumption forces any variables with .hi[non-invariant] data generating processes to absorb any spatial variation
+
+ - .hi-orange[SCI point variables:] Fuels, Weather, Elevation, Dryness/Cure, .hi[Property Value (20km)]
+
+**Where should coefficient bias appear?**
+
+---
+# Econometric Models
+
+**1.** Is Property Value a Causal Factor in Suppression Costs?
+
+Follows a Doubly-Robust Identification Strategy
+
+--
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+
+`$$P(X_i) = f(\cdot): \text{Treatment Intensity}$$`
+
+`$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+
+`$$log(\frac{Suppression\ Costs_i}{Acres_i}) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+--
+
+`$$\hat{\theta} \equiv \text{Estimand of Interest; } \frac{\%\Delta \text{Suppression Costs}}{\%\Delta \text{Property Values}}$$`
+
+---
+# Econometric Models
+
+**2.** Sensitivity change?
+
+Follows a Doubly-Robust Identification Strategy, combined with RDD, rv: Wildfire Acres
+
+- restrict wildfires to fires that had only one-two day-batches of resource assignment
+
+- exclude control group always-takers.
+
+--
+
+**Data**:
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+
+`$$\mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+---
+# Econometric Models
+
+**2.** Sensitivity change?
+
+`$$log(\frac{Suppression\ Costs_i}{Acres_i}) = \beta_1\mu+ \theta log(Property\ Values_i) + g_{\mu}(X_i|\mu) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f_{\mu}(X_i|\mu) + v_i\ \ \ (2)$$`
+
+&lt;br&gt;
+
+**Data**:
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+`$$\mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+
+&lt;br&gt;
+
+**Hypotheses**:
+`$$H_0: \beta_1 = 0, H_a: \beta_1 \neq 0$$`
+
+---
+# DAG-work
+
+.center[&lt;img src="dagitty-model(1).jpg" style="width: 100%", class="center"/&gt;]
+
+---
+# DAG-work 2
+
+.center[&lt;img src="dagitty-model(2).jpg" style="width: 100%", class="center"/&gt;]
+
+---
+# Why 'Acres'/'Perimeter' is Bad Control
+
+.center[&lt;img src="dagitty-model(3).jpg" style="width: 100%", class="center"/&gt;]
+---
+
+---
+# Cost Monitoring (General)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+`$$Total\ Cost = f(h(L,K),\tilde{P})$$`
+`$$Total\ Benefit = g(h(L,K), Env)$$`
+
+Ideally, we want...
+
+`$$\frac{\partial f}{\partial h}\frac{\partial h}{\partial K} = \frac{\partial g}{\partial h}\frac{\partial h}{\partial K}$$`
+But in both cases, `\(h\)` is not observed. So we settle for next-best estimate, technical efficiency in costs.
+---
+# Stratified Cost Index
+&lt;br&gt;
+Historically, wildfire suppression costs went *unmonitored.*
+
+--
+
+The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a group of economists under the Bush admin to correct this gap. Big econometric (and accounting project.)
+
+**SCI** addresses need: time-invariant (ignoring inflation) cost predictions of wildfire.
+
+--
+
+ - **Idea** : Rather than perform cost-benefit analysis, the **SCI** provides historic context for fire suppression costs, given local features relevant to fire spread and costs.
+
+**SCI Approach:** train an OLS model using features derived from the *point of ignition* and *relevant to fire spread/local assets at risk* on historic fire suppression costs `\(\rightarrow\)` predict new wildfire expenditures.
+
+--
+
+Use **predictions** from SCI and their standard errors as guideline to audit new fires
+
+---
+# What does the kernel Look Like?
+
+Pretty hard to figure out, with as many inputs as we have, what actually matters.
+
+--
+
+Harder still - these functions are not linear. How do we get interpretable 'coefficient equivalents'? How about partial gradients?
+
+`$$\hat{\beta}_{nonlin} \equiv \frac{\partial f}{\partial X_i}*X_i$$`
+
+Shown: good performance across interpretability metrics in lab settings.
+
+However - if we have very 'flat' gradients...
+
+`$$\frac{\partial f}{\partial X_i} \approx 0$$` 
+
+...we only have local information about the activation 
+
+- could be flat because at peak of mountain (meaning it's really important to the function) or may be flat everywhere.
+
+---
+# Kernel, improved
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+Good news: Because Neural Networks are differentiable everywhere, I can use a very cool tool to explore what I'm controlling for in full.
+
+Known as 'integrated gradients' essentially it calculates an approximate Riemann sum of gradients to get true conditional value, following the Gauss-Legendre formula.
+
+---
+# Visualizing the Kernel
+
+&lt;br&gt;&lt;br&gt;
+
+`$$IG := (x_i - x_i') \times \int^1_{\alpha = 0}\frac{\partial NN(x_i' + \alpha*(x_i - x_i'))}{\partial x_i}$$`
+Where `\(x_i\)` is an image, but practically speaking could be as fine-grained as a single channel-pixel.
+
+--
+
+This buys me an 'explainability' map over the features I put into the CCT, and allows me to point you directly at what the meta-learner uses to adjust treatment propensity and outcome level.
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="Kernel1HF.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric (point of ignition)]
+
+.center[&lt;img src="IgnitionPtHFF.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="HFKernel1.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="KernelZoomHF-2.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="HFKernel-4.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel: Utah
+.center[**Range Fire:** NLCD Impermeability metric]
+
+
+.center[&lt;img src="PropertyAtRisk.png" style="width: 60%", class="center"/&gt;]
+
+
+---
+# Kernel: Utah
+.center[**Range Fire:** Slope DEM metric]
+
+
+.center[&lt;img src="UtahFire-slope.png" style="width: 60%", class="center"/&gt;]
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

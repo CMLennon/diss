@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Do higher property values increase fire suppression costs?</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Connor Lennon" />
+    <link href="actual-5-slide-deck-SCI-2-nopause_files/remark-css/default.css" rel="stylesheet" />
+    <link href="actual-5-slide-deck-SCI-2-nopause_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="actual-5-slide-deck-SCI-2-nopause_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css-2.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Do higher property values increase fire suppression costs?
+### Connor Lennon
+### Fall 2021
+
+---
+
+exclude: true
+#class: inverse, middle
+
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+&lt;/style&gt;
+
+---
+class: clear
+
+&lt;img src="retardant-drop-sq.jpeg" style="width: 110%", class="center"/&gt;
+
+&lt;!--.center[.smaller[*McCash fire, threatening California Seqouia: Inciweb, September 16, 2021*]]--&gt;
+
+.center[Over the last ten years, the US spent .hi-orange[$21.4 billion] on fire suppression] 
+
+.center[.smaller[Increasing number of homes are being built in the .hi[W]ildland .hi[U]rban .hi[I]nterface (.hi[WUI])]]
+
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+# [2] What is .hi-orange[causing] these higher costs?
+
+What causes fires to be __more__ or __less__ expensive to suppress in the first place?
+
+Major policy concern: association between .hi[property values] and .hi-orange[expense of fire suppression] (observed by existing literature) `\(\rightarrow\)` __regressive!__
+
+Is this association due to a bias towards protecting wealth directly or due to expensive homes being built in places that are expensive to fight fires?
+
+.pull-right[ __Complication: Dynamic expectations__. Which paths a fire could take impact expected costs. Suppression decisions impact actual paths AND costs. Expected paths affect suppression decisions, homes at risk, and costs. **Simultaneity** problem arises if statistically analyzed ex-post, but disappears if examined using ex-ante data.]
+
+.pull-left[
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# [3] Outline
+
+__Research goal:__ .smaller[Decompose the fire manager's problem to identify:]
+
+__1:__ .smaller[Do fire managers preferentially assign more resources to fires near expensive properties?]
+
+__2:__ .smaller[How much of this correlation between fire suppression and property values is due to physical attributes common to expensive properties and higher suppression costs?]
+
+__Note:__ .smaller[Could be a combination of both!]
+
+.smaller[.hi-black[Methods]]: .smaller[Double/Debiased Machine Learning]
+
+- .smaller[Uses .hi-black[C]ompact .hi-black[C]onvolutional .hi-black[T]ransformer (.hi-black[CCT]), to model nonlinear confounders in a regression model (e.g., Slope, Fuels, Canopy Cover, Accessibility ...)]
+
+- .smaller[Produces causal estimates of property value on fire suppression costs, controlling for machine-learned fire risk attributes]
+
+---
+# [4] Causal System
+
+### Research Question
+
+&lt;!--.center[.smaller[.hi-orange[P.V]: Property Values| .hi-orange[Supp]: Suppression Costs| .hi-orange[Envir]: Environment| 
+.hi-orange[Amnty]: Amenities| .hi-orange[FireRsk] : Fire Risk|.hi-orange[Ex.Supp]: Expected Suppression Costs]]--&gt;
+
+
+
+&lt;!--&lt;hr style="height:2px; visibility:hidden;" /&gt;--&gt;
+
+
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/probfig-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+# [4] Causal System
+
+### Basic Hedonics
+
+&lt;!--.center[.smaller[.hi-orange[P.V]: Property Values| .hi-orange[Supp]: Suppression Costs| .hi-orange[Envir]: Environment| 
+.hi-orange[Amnty]: Amenities| .hi-orange[FireRsk] : Fire Risk|.hi-orange[Ex.Supp]: Expected Suppression Costs]]--&gt;
+
+&lt;!--&lt;hr style="height:2px; visibility:hidden;" /&gt;--&gt;
+
+
+
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/prob2fig-1.svg" style="display: block; margin: auto;" /&gt;
+---
+# [4] Causal System
+
+### Basic Physics
+
+&lt;!--.center[.smaller[.hi-orange[P.V]: Property Values| .hi-orange[Supp]: Suppression Costs| .hi-orange[Envir]: Environment| 
+.hi-orange[Amnty]: Amenities| .hi-orange[FireRsk] : Fire Risk|.hi-orange[Ex.Supp]: Expected Suppression Costs]]--&gt;
+
+
+
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/prob3fig-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+# [4] Causal System
+
+### Fire Manager's Expectation/Information (Unobserved)
+
+&lt;!--.center[.smaller[.hi-orange[P.V]: Property Values| .hi-orange[Supp]: Suppression Costs| .hi-orange[Envir]: Environment| 
+.hi-orange[Amnty]: Amenities| .hi-orange[FireRsk] : Fire Risk|.hi-orange[Ex.Supp]: Expected Suppression Costs]]--&gt;
+
+
+
+
+
+&lt;img src="actual-5-slide-deck-SCI-2-nopause_files/figure-html/prob4fig-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: clear
+
+.hi[&amp;#x2611;] .smallest[.smallest[.hi-black[Goal:]]] .smallest[.smallest[To disentangle physical components of expected fire suppression costs and amenities from a tendency to protect expensive property. Use models of fire spread and risk of damage to assets that fire managers expect to protect in order to identify important control variables - elevation, fuels, water-features, telephone, etc].]
+
+.smallest[.smallest[**D/DML** uses out-of-sample estimates from two .hi-black[CCT] models performing nonlinear regressions of Property Values and Suppression Costs]] `\(\scriptsize f(\cdot), g(\cdot)\)` .smallest[.smallest[respectively, using the control variable set]] `\(\scriptsize X_i\)` .smallest[.smallest[for each]]. .smallest[.smallest[For fire]] `\(\scriptsize i\)` .smallest[.smallest[:]]
+
+
+
+`$$\small log(Suppression\ Costs_i) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+
+`$$\small log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+
+&lt;!--$$\small \theta \equiv param\ of\ interest, \ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}, \eta \equiv\{f(X_i),g(X_i)\}$$--&gt;
+
+.smallest[.smallest[Estimating]] `\(\small \theta\)` .smallest[.smallest[with linear estimators in this system of equations produces estimation error in]] `\(\scriptsize f\)` .smallest[.smallest[in equation (2) that ]] .smallest[.smallest[may produce bias. For D/DML estimation to yield valid causal estimates, two assumptions are required:]]
+
+.smallest[.smallest[__A&lt;sub&gt;1&lt;/sub&gt;__]] `\(\scriptsize u_i\)` .smallest[.smallest[ and ]] `\(\scriptsize v_i\)` .smallest[.smallest[exist, are additively separable from]] `\(\scriptsize g,\ f\)` .smallest[.smallest[ and are unassociated to one another]]. .smallest[.smallest[I.e - unlearnable non-physical factors in property values (eg, interest rates at valuation time) are not associated with non-physical factors in fire-level suppression (eg, changes in wind speed during burn) except via changes in property values.]]
+
+.smallest[.smallest[__A&lt;sub&gt;2&lt;/sub&gt;__]] `\(\scriptsize  \sum_{i\in N}(\hat{g}(X_i) - g(X_i))(\hat{f}(X_i) - f(X_i))\)` .smallest[.smallest[converges at rate]] `\(\scriptsize \sqrt{N}\)`, .smallest[.smallest[or that either estimation error converges at least at rate]] `\(\scriptsize \sqrt[4]{N}\)` . .smallest[.smallest[This assumes the estimation errors of]] `\(\scriptsize \hat{f}\)` .smallest[.smallest[ and ]]  `\(\scriptsize \hat{g}\)` .smallest[.smallest[are not systematically associated or .hi-black[CCT] is a reasonable estimator for]] `\(\scriptsize f\ \text{or}\ g\)` .smallest[.smallest[, and that]] `\(\scriptsize X_i\)` .smallest[.smallest[does not contain any bad controls]]
+
+
+
+---
+# Nascent Results
+
+My estimates indicate a smaller effect from property values on suppression costs than existing literature: for a .hi[1% increase in property values], costs .hi-orange[increase by .038%]. Compares to .hi-slate[reported .11%] increase in Gebert et al. 2007 (SCI) and .hi-slate[a .16% increase] when replicating SCI on data from 2020-2021. This difference is statistically significant.
+
+---
+exclude: true
+
+.smallest[**Assume** errors exist &amp;] .smallest[ are additively separable in log-log form] 
+
+
+
+.smallest[.smallest[Prelim results: Estimate for the effect of = .smallest[.smallest[.hi-orange[.03817], 95% - CI = .hi-orange[[-.02577, .1021]] vs. Gebert et. al, 2007 OLS estimate of .hi-slate[.1131], (CI unknown). Repeating Gebert et al. procedure on fire expenditures data from 2020-2021 -] .smallest[[estimate = .hi-slate[.1606], CI = .hi-slate[[0.0973, 0.223908]]]]]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

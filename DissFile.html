@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Dissertation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Connor Lennon" />
+    <script src="DissFile_files/header-attrs/header-attrs.js"></script>
+    <link href="DissFile_files/remark-css/default.css" rel="stylesheet" />
+    <link href="DissFile_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="DissFile_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Dissertation
+## Essays on ML in Causal Inference and Environmental Economics
+### Connor Lennon
+### Summer 2022
+
+---
+
+class: inverse, middle
+
+
+
+&lt;style type="text/css"&gt;
+@media print {
+  .has-continuation {
+    display: block !important;
+  }
+}
+&lt;/style&gt;
+
+
+# Introduction &amp; Preamble
+
+---
+# Abstract
+
+.center[.hi[Plan of Attack] ~ .hi-black[45 minutes of presenting me &amp; my work]]
+
+.pull-left[- Grad School CV ~ .note[5 minutes]:] .center[.qa[What I've done, and what I'm working on]]
+
+--
+
+.center[**Core Chapters** - 2 Works]
+
+.pull-left[- Chapter 1: What Can we Machine Learn Too Much of in 2SLS? ~ 10 minutes of set up, 10 minutes of results] 
+
+.center[(Coauthored with Glen Waddell and Edward Rubin)]
+
+.pull-left[- Chapter 2: Revisiting the Stratified Cost Index: Investigating The Effect of Property Value on Suppression Costs ~.note[20 minutes]]
+
+
+---
+class: inverse, middle
+# CV (Timeline)
+---
+# Timeline
+
+.pull-left[
+**Third Year:**
+
+- Began major work on MLIV (Third Year Paper)
+
+- Taught ECON 201 independently, with a COVID twist!
+
+- (Summer) Completed internship with Resources for the Future under Matthew Wibbenmeyer
+]
+
+--
+
+.pull-right[
+**Fourth Year:**
+
+- Began work on “Sorting Over Wildfire Risk in the Wildland-Urban Interface” with Matthew Wibbenmeyer, LaLa Ma, Margaret Walls
+
+- Taught ECON 421 (Econometrics) and ECON 201 Remotely for classes of 80, 300 students
+
+- Began work on "Revisiting the SCI" and split work with Matthew Wibbenmeyer. 
+
+]
+---
+# Timeline
+
+&lt;br&gt;
+
+**Fifth Year:**
+
+- Presented "Revisiting the SCI" multiple times - once to an internal group for feedback, twice during a 5 minute lightning talk at a local fire-research group.
+
+- Restructured the course and taught ECON 201 for a fully WEB format
+
+- Prepared analysis for the first of two RFF papers designed for special issue of Land Econ ("Capitalization of Perceived Wildfire Risk into Housing Values")
+
+---
+# CV
+
+__Employment:__ 
+
+  - Doctoral Intern at Resources for the Future: Invited to Continue Working on Project
+  - Offered work at Bayer as Econometrician to begin this Summer
+
+__Conferences:__
+  
+  - 2 externally, accepted to Western Wildfire Economics for longer conference, but has been postponed
+  - Presented twice internally
+  
+__Department Service:__
+
+  - 1 year as Doctoral Student Rep to Department (3rd year)
+  - Unofficial Office Kitchen Fairy
+
+---
+# Other Work
+
+ 1) _Sorting Over Wildfire Risk in the Wildland-Urban Interface_ (With Matthew Wibbenmeyer, Lala Ma, and Margaret Walls)
+.small[
+  - Split into two papers, hedonic analysis and BLP sorting model
+]
+
+&lt;img src="sortingproj.png" width="100%" height="100%" style="display: block; margin: auto;" /&gt;
+---
+
+&lt;br&gt;
+&lt;br&gt;
+
+My dissertation _Essays in Machine Learning for Causal Inference and Environmental Economics_ has two works:
+
+
+1. _What can we machine learn (too much of) in 2SLS?: Insights from a bias decomposition and simulation_ (with Ed Rubin and Glen Waddell)
+
+2. _Revisiting the Stratified Cost Index: Investigating Causal Nature of Property Value on Suppression Costs_ (Solo Authored)
+
+---
+class: middle, inverse
+# Chapter 2
+## What can we machine learn (too much of) in 2SLS?
+
+---
+# What is Two-Stage Least Squares?
+
+- a specific, computational, approach to the *Instrumental Variables* (**IV**) identification problem.
+
+--
+
+**IV problem** Causal Effect, `\(X \rightarrow Y\)` is confounded by some unobserved variable, but there exists some `\(Z\)`, such that `\(Z \rightarrow X\)` and  `\(Z \perp \!\!\! \perp Y | X\)`
+
+Best understood through example: 
+
+**Card Instrument**: Interested in the returns to schooling `\(Schooling_i \rightarrow Income_i\)`, but `\(Parent\ Income_i \rightarrow Schooling_i\)` and `\(Parent\ Income_i \rightarrow Income_i\)`.
+
+ - Solution: Use binary *birth proximity* to a college campus as instrument for schooling. 
+
+---
+# Intuition
+
+Single continuous instrument idea: the .hi[continuous instrument] causes a change in some .hi-orange[dose response] for treatment.
+
+My example - Want to estimate the effect of reported headache severity on the mg of ibuprofen prescribed by doctor `\(\blacktriangledown\)` .footnote[$\blacktriangledown$: My coauthors take no blame for this example]
+
+`$$Income_i \rightarrow AsprinAtHome_i$$`
+`$$AsprinAtHome_i \rightarrow Headache\ Intensity_i$$` 
+`$$Income_i \rightarrow PrescribedMg_i$$`
+
+--
+
+- __Instrument__: *Deviation in Max Night-time Noise Level (dB) From Average Max*
+
+---
+# Instrument
+
+.center[
+&lt;img src="DissFile_files/figure-html/ivdag-1.png" width="60%" height="60%" style="display: block; margin: auto;" /&gt;
+]
+--
+
+If the relationship between noise and reported headache intensity is .hi[linear] then we can use standard 2SLS.
+
+**1** Regress dB on Intensity
+
+**2** Regress predictions from **1** on Mg
+
+---
+# Illustrated
+
+.pull-left[
+&lt;img src="iv.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
+
+- Where Y = outcome, X = endogenous variable, Z = instrument,
+
+- `\(\beta = 1\)`
+
+- `\(X = Z + \frac{W}{2} + \varepsilon\)`
+
+- `\(Y = X + W + \epsilon\)`
+
+- `\(Z \sim unif(-50, 50)\)`
+]
+
+
+
+---
+# Nonlinear?
+
+Suppose the true effect is driven by the relative power level of the night-time noise (ie, a nonlinear function of `\(dB\)`)?
+
+--
+
+- If we know it - we can use that functional form directly as we did above!
+
+--
+
+- If we don't know it, but .hi-orange[believe] it's linear, we can end up in a .hi[weak instrument] scenario...
+
+---
+# Nonlinear
+
+.pull-left[
+&lt;img src="ivsq.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
+
+- Where Y = outcome, X = endogenous variable, Z = instrument,
+
+- `\(\beta = 1\)`
+
+- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+
+- `\(Y = X + W + \epsilon\)`
+
+- `\(Z \sim unif(-50, 50)\)`
+]
+
+
+
+---
+# ML in 2SLS
+
+A promising angle:
+
+- using a functionally appropriate ML tool might be able to boost the strength of a weak or set of weak instruments in the first stage if they are only weak .hi[linearly].
+
+--
+
+Despite the interest, much of the intuition from existing econometric methods doesn't map directly to using Machine Learning for causal queries.
+
+--
+
+.qa[Q] How does using out-of-the-box machine learning perform when predicting the first stage of 2SLS?
+
+--
+
+.qa[A] __(Our Contribution)__ Predicts `\(X\)` well, but the resulting `\(\hat{\beta}\)` is biased in interpretable ways.
+
+---
+# Intuition
+
+Much of the assumptions around the first stage of 2SLS center around optimizing two narratives
+
+--
+
+1.) Relevance, ie, that your instrument has explanatory power ✅
+
+--
+
+2.) Exogeneity, which is generally spoken about in terms of correlations, ie, `\(corr(u,\textbf{z}) = 0\)`.
+
+--
+
+Machine learning, on top of these canonical concerns, complicates exogeneity and introduces two more challenges.
+
+---
+# Intuition
+
+Using .hi-purple[machine learning] introduces new concerns:
+
+-  Potentially Recovering endogeneity - overfitting, just as in any prediction task, is doubly dangerous in causal estimation
+
+-  Complex Exclusion restrictions - The set of exclusion restrictions under consideration is much larger. Instead of  `\(corr(\varepsilon_i, \textbf{z}) = 0\)`, need `\(E(\varepsilon_i|\textbf{z}) = 0\)`.
+
+-  Increasing Bias - Bias-variance tradeoff can lead to inflated coefficients in the second stage of 2SLS if variance-reduction is primary strategy.
+
+These factors make using machine-learned first stages defy existing econometric logic.
+
+---
+# Work
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+We run a .hi-orange[monte-carlo simulation] on Belloni et al. (2012) synthetic datasets 
+
+.hi[Result]: using machine learning under classic assumptions can lead to .hi[more bias] than naive-OLS.
+
+---
+# Decomposition of Error
+
+Bias in 2SLS breaks down into an informative form-
+
+`$$\frac{Cov(\hat{x}, w)}{Var(\hat{x})} = \frac{\beta_1Cov(\hat{x},e) + Cov(\hat{x},u)}{Var(\hat{x})}$$`
+--
+
+- In OLS, `\(\beta_1Cov(\hat{x},e)\)` is mechanically 0, allowing for `\(Cov(\hat{x},u)\)` to be assumed 0 given the estimating model.
+
+--
+
+- .hi-orange[However], the nonparametric estimate of the first stage makes no guarantees on `\(Cov(\hat{x},u)\)`  given traditional assumptions.
+
+--
+
+- Additionally, nonlinear first stages can produce non-orthogonal errors, meaning `\(\beta_1Cov(\hat{x},e) \neq 0\)`
+
+Let's return to the toy example from before.
+
+---
+
+# Nonlinear
+
+.pull-left[
+&lt;img src="iv-sq-bst.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
+
+- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+
+- `\(Y = X + W + \epsilon\)`
+
+- `\(Z \sim unif(-50, 50)\)`
+]
+
+.center[
+Extreme bias: .hi-orange[worse] than naive OLS. 
+]
+--
+.center[
+Just .hi[Forbidden Regression?]
+]
+---
+# Nonlinear
+
+.pull-left[
+&lt;img src="iv-sq-bst-lin.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+
+- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+
+- `\(Y = X + W + \epsilon\)`
+
+- `\(Z \sim unif(-50, 50)\)`
+]
+
+.center[Still severely biased, even in simple case]
+
+---
+# Simulation Results
+
+&lt;img src="simresults.png-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+.center[More 'linear' the model, the less bias it produces]
+
+---
+# Flexibility and Decomposition
+
+&lt;img src="cv-biasdecomp.png-1.png" width="1301" style="display: block; margin: auto;" /&gt;
+
+- Flexibility increases model's ability to pick up on `\(cov(\hat{x}, u)\)` term, potentially increasing bias in estimates of `\(\beta_1\)`.
+
+---
+# Discussion: A Way Forward
+
+One possible way through this is by using out of sample predictions from a split-sample design machine learning model.
+
+.pull-left[
+&lt;img src="iv-sq-bst-lin-os.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+2 downsides - It relies on `\(IID\)` definition assumed in most DGPs
+
+**1** `\(E[Z_i|u_i] = 0\)`
+
+**2** Sample size must be reasonably large, or estimates can end very unpredictably bad, worse than 2SLS or IV, even in the nonlinear case
+
+]
+
+---
+#A Way Forward (&gt; Medium Data Only)
+
+.pull-left[
+&lt;img src="iv-sq-bst-lin-os-sm.gif" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+2 downsides - It relies on `\(IID\)` definition assumed in most DGPs
+
+**1** `\(E[Z_i|u_i] = 0\)`
+
+**2** Sample size must be reasonably large, or estimates can end very unpredictably, with point estimates more biased than those seen in 2SLS or IV, even in the nonlinear case
+
+]
+
+.center[Shown: .hi-orange[N = 200]]
+
+---
+#Discussion
+
+__Conclusion__
+
+- Improvements in first stage fit from out of the box machine learning is not guaranteed to improve estimates in the second stage
+
+- In fact, flexibility appears to increase the chance of fitting bad variation into the model, and puts even more pressure on the assumptions made on the data
+
+- This extends beyond just 'forbidden regression'
+
+__However__
+
+New techniques are being developed explicitly to incorporate machine learning into causal pipelines, some of which come with minimal technical overhead if you are willing to accept more restrictive assumptions.
+
+---
+class: middle, inverse
+# Chapter 3
+## Revisiting the Stratified Cost Index
+
+---
+
+
+class: clear
+
+&lt;img src="retardant-drop-sq.jpeg" style="width: 110%", class="center"/&gt;
+
+.center[.smaller[*McCash fire, threatening California Seqouia: Inciweb, September 16, 2021*]]
+
+.center[Unlike other natural disasters, damage from wildfire can be prevented by increasing .hi-orange[suppression effort]]
+
+.footnote[.hi-orange[Suppression costs/effort:] *costs paid/effort exerted by government to prevent damage during a fire*]
+
+--
+
+.center[This allows for risk-abatement investment to be evaluated as an in-budget tradeoff.]
+
+.center[Suppression costs over the last ten years: .hi-orange[$21.4 billion]] 
+
+---
+
+# Rising Costs, Changing Environment
+
+Predictions are only as good as the data used to produce them
+
+**Problem:** climate change and development are .hi[data drift].
+
+&lt;img src="DissFile_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Discrepancy in Resource Assignment
+
+.center[**Two Wildfires**]
+
+--
+
+.pull-left[**Eastland Complex, TX**
+
+Suppression Cost: 2,093,744
+
+Acres: 54,513
+
+Destroyed Homes: 200
+
+]
+
+.pull-right[**Coastal Fire, CA**
+
+Suppression Cost: 4,000,000 (est)
+
+Acres: 300
+
+Destroyed Homes: 20
+
+]
+
+---
+# Research Goal
+
+**Problem:** How do fire managers allocate suppression costs
+
+--
+
+ Currently: FS uses the .hi-orange[Stratified Cost Index (SCI)] which predicts historically-normed per-acre suppression cost elasticities.
+ 
+ - Uses ignition point DEM, fuel model, and total property value within 20km in log-log OLS framework.
+ 
+ 
+--
+
+**1.** Is property .hi[value] a valid _causal_ predictor in fire suppression effort/costs? (Why do we care?)
+
+**2.** If not, what are the consequences of using this variable in the cost function on estimated cost and transporting estimates from Forest Service lands to other locations? WUI expansion?
+
+ - does using it to produce historic benchmarks for fire managers bias their resource assignments towards wealthier/denser areas?
+
+---
+# Stratified Cost Index, Background
+&lt;br&gt;
+Historically, wildfire suppression costs went *unmonitored.*
+
+--
+
+The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a group of economists under the Bush admin to correct this gap. Big econometric (and accounting project.)
+
+**SCI** addresses need: time-invariant (ignoring inflation) cost predictions of wildfire.
+
+--
+
+ - **Idea**: Rather than perform cost-benefit analysis, the **SCI** provides historic context for fire suppression costs, given local features (fuels, elevation and .hi[property values]) relevant to fire spread and costs.
+
+**SCI Approach:** train an OLS model using features derived from the *point of ignition* and *relevant to fire spread/local assets at risk* on historic fire suppression costs `\(\rightarrow\)` predict new wildfire expenditures.
+
+--
+
+ - .hi-black[Problem]: This procedure assumes only local effects drive fire behavior, but are property values invariant to distant physical features?
+
+---
+# Stratified Cost Index, Assumptions
+
+Like many observations studies in absence of a natural experiment, the .hi-orange[SCI] relies on _conditionally_ as good as random variation in treatment assignment. 
+
+- Where `\(Y\)` is an outcome of interest, `\(z\)` is a treatment variable and `\(X\)` is a set of controls, the assumptions for the identification strategy are:
+
+$$
+Y = \beta_0 + z\beta_1 + X\gamma+ u_i \tag{*} 
+$$
+
+$$
+z \perp\!\!\!\!\perp u_i|X \tag{1}
+$$
+$$
+P(z|X) \geq 0 \tag{2}
+$$
+--
+
+This is a **strong assumption**
+
+--
+
+However - OLS and ignition-level measures of important variables are unlikely to be a sufficiently rich `\(X\)` to satisfy this assumption.
+
+- Using all relevant variables make the problem ill-posed.
+
+---
+# Solution
+
+.center[Use .hi-black[D]ouble/.hi-black[D]ebiased .hi-black[M]achine .hi-black[L]earning (.hi-black[D/DML]) to learn a **non-spatially-invariant** kernel that weights high-dimensional pre-fire environmental variables into best-predictor of fire costs]
+
+.center[.hi-black[Entire field of ML] has techniques adaptable to this problem: Computer Vision]
+
+--
+
+.pull-left[
+- .smaller[Use model inspired by .hi-black[C]ompact .hi-black[C]onvolutional .hi-black[T]ransformer (.hi-black[CCT]), to reduce dimensions of the spatial problem, treating predictions of fire cost as confounders in a regression model (using rasters as channel inputs e.g., Slope, Fuels, Canopy Cover, Accessibility ...)]
+
+]
+
+
+.pull-right[
+
+**Example:** CZU Complex (2020) Raster
+
+&lt;img src="CZUComplex2020.png" style="width: 60%", class="center"/&gt;
+
+]
+
+.smaller[**Goal**: Produce causal estimates of property value on fire suppression costs, controlling for machine-learned fire risk attributes]
+
+---
+# Research
+
+&lt;br&gt;
+
+.center[**Headline Results**]
+
+__1.__  Spatially Corrected Estimates? **Result:** - **Much** less important than previously estimated. .01% vs. .11% (.16% on data available) increase in suppression costs per percentage point increase in nearby property values (log-log estimate.)
+
+--
+
+__2.__ Improve the SCI? **Result:** Not just the SCI. Beats even regression models with full perimeter information. Improves `\(R^2\)` from 60% (In sample) (35-60%) `\(\rightarrow\)` 85% out of sample relative to reported estimates, and extends to fires previously considered 'too small' for cost forecasts.
+
+--
+
+__3.__ Legacy of SCI? **Result:** Using a D/DML RDD, around a 'mandatory cost estimation' threshold (300 acres)- exists evidence that cost-monitoring increases sensitivity of fire managers to property values
+
+
+
+---
+# Data
+
+.center[1750 wildfires, 2020-2021 summer]
+
+.center[OOD test - 3150 wildfires, 2020-2022, use final 300 fires as OOD test]
+
+.center[&lt;img src="GACCMap.png" style="width: 100%", class="center"/&gt;]
+
+---
+# Data
+
+.center[1750 wildfires, 2020-2021 summer]
+
+.center[OOD test - 3150 wildfires, 2020-2022, use final 300 2022 fires as OOD test]
+
+.center[&lt;img src="RegionalSuppressionCosts.png" style="width: 100%", class="center"/&gt;]
+---
+#  Data Sources
+
+__Fire management information__: IRWIN government database: live feed of all updates to fire incidents, including updates to ignition point, cost, cost prediction etc. Extremely challenging to acquire access. Linked directly to strategic tools being used by fire managers.
+
+--
+
+__Weather__: GRIDMET gridded weather data - provides ERC and daily wind, precip etc.
+
+--
+
+__Fuels, Topological Data &amp; Values at Risk__: LANDFIRE and WFDSS
+
+---
+# Fitting
+
+Model predictably underestimates highs and overestimates lows
+
+.center[&lt;img src="firecostfit.png" style="width: 100%", class="center"/&gt;]
+---
+# Crossfitting
+
+However, in general the errors in each model are small when the companion prediction errors are large
+
+.center[&lt;img src="crossfit.png" style="width: 100%", class="center"/&gt;]
+
+---
+class: clear
+
+.center[&lt;img src="results.png" style="width: 90%", class="center"/&gt;]
+
+---
+# SCI and Income More Correlated?
+
+&lt;br&gt;
+
+We can use correlation between reported `\(SCI\)` final costs and the `\(SCI_{nn}\)` final costs to see if conditioning predictions directly on property value leads to predicted costs that are more correlated with income.
+
+`$$H_0: corr_1(SCI, Income_{20km}) &lt;= corr_2(SCI_{nn}, Income_{20km})$$`
+
+--
+
+`$$p(H_0|corr_1 = .10, corr_2 = .03, n = 424) \approx 0.029$$`
+--
+
+Tests on correlation between **property value, per-capita income and summed income** also reject in equivalent tests.
+
+--
+
+.hi[Hard to interpret:] know that the CCT forecast pearson coefficient is smaller, but no guarantee of better outcomes.
+
+---
+# Do Fire Managers Respond to Costs?
+
+.center[&lt;img src="RDD.png" style="width: 100%", class="center"/&gt;]
+
+
+---
+
+# Conclusion
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+ - Once adjusting for non-invariant environmental factors, .hi[property values] appear to have an extremely small (insignificant) effect on suppression costs
+ 
+--
+
+ - Some evidence that .hi-orange[fire managers] respond to this modeling choice, and has some impact on behavior.
+
+--
+
+- Model proposed here is significantly less correlated with per-capita income, summed income and total property value near the point of ignition.
+
+---
+# Thank you!
+
+---
+class: middle, inverse
+# Appendix 1
+
+---
+
+# Term 1
+
+__4 General Cases__
+
+In estimating `\(\beta_1Corr(\hat{x},e)\)`, econometrics has a very limited 'intuitional toolbox' because this term drops out of standard OLS.
+
+--
+
+The effect on bias can be digested into `\(Sign\{\beta_1\} \cdot Sign\{Corr(\hat{x},x)\sigma_x - \sigma_{\hat{x}}\}\)`
+
+--
+
+Quickly noticable is that if the ML algorithm perfectly reproduces estimand `\(x\)`, this term is not of concern. Similarly, if our causal parameter of interest is equal to 0, we are not concerned.
+
+--
+
+If we define a variance reduction strategy as `\(min_{\hat{x}}\ \sigma_{\hat{x_s}},\ \hat{x_s} \in \hat{X}\ s.t. Corr(\hat{x_s}, x) &gt; Corr(\hat{x}_{-s}, x, x)\)`, variance reduction causes problems at a ridge of fixed points that changes with the explanatory power of the algorithm &amp; `\(\sigma_{\hat{x}}\)`
+
+--
+
+This problem, interestingly, is solvable by using OLS 2SLS after a ML `\(0^{th}\)` first stage.
+
+---
+# Term 2
+
+`$$Cov(\hat{x},u)$$`
+
+.hi-purple[Exclusion Restriction]. Since OLS is linear in form, requires `\(Cov(\textbf{z}\hat{\beta}, u) = 0\)`, but ML requires `\(Cov(f(\textbf{z}), u)\)` for any arbitrary functional form `\(f\)`.
+
+--
+
+This term leaves the practitioner with one of three tough choices
+
+--
+
+1.) Restrict the functional form of the ML procedure
+
+--
+
+2.) Extend the "Exclusion Restriction" 
+
+- If we can believably strengthen `\(corr(\textbf{z}, e) = 0\)` to `\(E(e|\textbf{z}) = 0\)` then we are safer.
+
+--
+
+3.) Make big assumptions about ML's relationship to excludibility. .footnote[Leaving one at the mercy of the reviewer]
+
+---
+#Term 3
+
+`$$\frac{1}{Var(\hat{x})}$$`
+
+Variance reduction, typically, is not a concern in 2SLS (though OLS does reduce variance) because our intuitive assumptions about the numerator are that it will be 0.
+
+--
+
+In PLR-based.hi[*] .hi[MLIV], many applications rely on a convergence approach to identification, and thus can result in an almost-IV situation outside of optimal conditions. In these cases, variance reduction can lead to higher-than-naive bias.
+
+.footnote[.hi[*] PLR: Partially Linear Regression]
+
+
+
+---
+# Datasets
+
+**2 Main Datasets**
+
+`\(\text{Number of Obs.}= 1000\)`. Differ only in number, strength and correlation of instruments.
+
+$$
+Z_i \sim N(0, \Sigma)\\
+X_i = Z_i\gamma + u_i\\
+Y_i = 1*X_i + u_i + \varepsilon_i
+$$
+Where case 1 (easy): `\(|\{z_1, \dots, z_N\}| = 7, \Sigma \equiv \text{diag. matrix}, \gamma =1\)`
+
+And case 2 (hard): $|\{z_1, \dots, z_N\}|  = 100, \Sigma \not\equiv \text{diag. matrix},\ \gamma = [.7^1, \dots, .7^N]  $
+
+---
+class: middle, inverse
+# Appendix 2
+
+---
+
+---
+# Do Fire Managers Respond to Costs?
+
+.center[&lt;img src="rddimg1.png" style="width: 90%", class="center"/&gt;]
+
+
+---
+# D/DML
+
+At its core, D/DML is just another Doubly Robust Estimation identification strategy.
+
+--
+
+.center[**Doubly Robust Estimation**]
+
+.pull-left[&lt;img src="double.png" style="width: 70%", class="center"/&gt;]
+
+.pull-right[&lt;br&gt;
+
+**Assumptions:**
+
+**1.** No unobserved confounding.
+
+**2.** Positivity: for continuous treatment, the conditional treatment density must be non-negative everywhere.
+
+**3.** No Bad Controls
+
+Source: [Python Causality Handbook](https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html)
+
+]
+
+---
+# D/DML
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+**Takeaway:** This method requires the same three 'intuitive' assumptions required from your stock-standard conditional outcome/propensity score model.
+
+**Idea:** Use existing causal information to encode dependencies, verified empirically by field experts/academic work.
+
+---
+# D/DML
+
+**Lots** of existing information on individual preferences for environmental amenities
+
+**Grounded and validated** model of wildfire spread and damage, used by forest service.
+
+Link these models to get a full SCM/DAG to identify a good control set. `\(\rightarrow\)` sufficient to identify our causal effect of interest.
+
+
+
+.pull-left[&lt;img src="ecosystemval.png" style="width: 100%", class="center"/&gt;]
+
+.pull-right[&lt;img src="mttfiremap.png" style="width: 90%", class="center"/&gt;]
+
+
+---
+# My Data
+
+To help control for spatial variation in risk, fuels, amenities - you name it, I pair 1750 wildfires taking place over the 2020 and 2021 wildfire seasons with two separate datasets.
+
+--
+
+.pull-left[
+.center[**1**]
+
+&lt;img src="CZUInputs.png" style="width: 70%", class="center"/&gt;
+]
+
+.pull-right[
+.center[**2**]
+.center[CSV-style data on Management]
+]
+---
+# Raster inputs
+
+**Inputs to Fire Spread/Spotting Models:**
+
+Canopy Bulk Density, Canopy Height, Canopy Base Height, Fuel Vegetation Height, Existing Vegetation Cover, Fuel Vegetation Cover, Vegetation Departure Index, 40 Class Fuel Model Distribution, Pre-response VIIRS detections, D.E.M. and derived attributes.
+
+**Inputs to Strategic Resource ID learning:**
+
+NLCD Imperviousness metric (LANDSAT measure of on-the-ground development), Protected Areas Database Membership, Private vs. Public Landownership, Communication/Cellphone Tower Locations, Average Travel/Evac Time (cell-level), Rasterized population grid
+
+**Inputs to Weather and Information Set:**
+
+Unconditional Burn Probability, Conditional Flame Length, Wind Speed (at time of ign.), Wind Direction, Total Precipitation over last 2 weeks, Estimated Soil Moisture, Drought Index.
+
+---
+# Tabular Inputs
+
+&lt;br&gt;&lt;br&gt;
+
+## Tabular Inputs are much Simpler
+
+Management Region (GACC), Reported Fuel Model, Hours between ignition and first response, total resources deployed Nationwide at time of initial response
+
+
+---
+# D/DML Meta-Models
+
+Using out-of-sample estimates from two customized **Neural Network** models performing nonlinear regressions of Property Values and Suppression Costs 
+
+
+`$$P(X_i) = f(\cdot): \text{Treatment Propensity/Treatment Intensity}$$`
+
+`$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+
+
+Where `\(X_i\)` is a set of tabular and raster controls.
+
+Estimate the following system of equations following Frisch Waugh Lovell (ish).
+
+For wildfire suppression effort `\(i\)`...
+
+`$$log(Suppression\ Costs_i) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+
+&lt;!--$$\small \theta \equiv param\ of\ interest, \ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}, \eta \equiv\{f(X_i),g(X_i)\}$$--&gt;
+
+Estimating `\(\theta\)` with linear estimators in this system of equations produces estimation error in `\(f\)` in equation (2) that may produce bias
+
+
+
+---
+# D/DML
+
+&lt;br&gt;
+
+__Q__ How is this different from controlling for regression inputs?
+
+--
+
+__A__ Buys independence from all functions of inputs that are estimatible by the machine learning model.
+
+**Regardless** of how fire managers respond to changes in fire risk/attributes, the model ought to capture that behavior so long as it is observed in the dataset and driven by causal logic.
+
+Remember - there is no certifiable evidence that our fire managers are behaving optimally. Only assumption - they face the same inputs/outputs as an 'optimal' fire manager
+
+---
+# D/DML
+
+&lt;br&gt;
+
+__Q__ How is this different from controlling for regression inputs?
+
+__A__ Buys independence from all functions of inputs that are estimatible by the machine learning model.
+
+**Important:** This is more than linear OLS specifications, but it's substantially less than everything.
+
+Implicit assumption - The estimation problem given to the ML model can converge to conditional outcome. 
+
+Bias/Variance Tradeoff here is much different calculus than in a traditional prediction problem:
+
+Takeaway - must ensure model is unbiased, at cost of higher variance. More than just *best predictor.*
+
+# Meta-learner
+
+.center[&lt;img src="CCTDiagModel.jpg" style="width: 73%", class="center"/&gt;]
+
+---
+# Problems
+
+Economists are always interested in 'who benefits' from the provision of any public good, but the .hi-orange[SCI] wasn't meant to do that.
+
+- One takeaway from SCI: fire suppression costs are **caused** in part by total nearby property value.
+
+ - Some researchers interpret .hi-orange[SCI] coefficients on 'sum of property values close to ignition' as **empirical** evidence of optimal suppression effort..super[.orange[*]]
+ 
+ .footnote[.hi[*]: Donovan et al, 2004, Abt 2009, Gude 2013, Hand 2014...]
+ 
+--
+
+Fortunately, wildfire suppression costs are likely valid under .hi[exchangability] and .hi-orange[counterfactual consistency] with a sufficient set of controls.
+
+--
+
+.hi-orange[SCI] controls for environmental and topological factors at point of ignition, so this is reasonable if no included variables' dgp is impacted by location. 
+--
+.hi[Property value] likely violates this assumption.
+
+
+---
+# Implicit Assumption of SCI: Invariance
+
+.hi-orange[Ignition point] predictions of wildfire costs `\(\implies\)` assuming .hi[invariance].
+
+Simplified example- imagine a featureless landscape with 1 neighborhood.
+
+--
+
+&lt;img src="DissFile_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# Bias
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+This assumption forces any variables with .hi[non-invariant] data generating processes to absorb any spatial variation
+
+ - .hi-orange[SCI point variables:] Fuels, Weather, Elevation, Dryness/Cure, .hi[Property Value (20km)]
+
+**Where should coefficient bias appear?**
+
+---
+# Econometric Models
+
+**1.** Is Property Value a Causal Factor in Suppression Costs?
+
+Follows a Doubly-Robust Identification Strategy
+
+--
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+
+`$$P(X_i) = f(\cdot): \text{Treatment Intensity}$$`
+
+`$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+
+`$$log(\frac{Suppression\ Costs_i}{Acres_i}) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+--
+
+`$$\hat{\theta} \equiv \text{Estimand of Interest; } \frac{\%\Delta \text{Suppression Costs}}{\%\Delta \text{Property Values}}$$`
+
+---
+# Econometric Models
+
+**2.** Sensitivity change?
+
+Follows a Doubly-Robust Identification Strategy, combined with RDD, rv: Wildfire Acres
+
+- restrict wildfires to fires that had only one-two day-batches of resource assignment
+
+- exclude control group always-takers.
+
+--
+
+**Data**:
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+
+`$$\mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+---
+# Econometric Models
+
+**2.** Sensitivity change?
+
+`$$log(\frac{Suppression\ Costs_i}{Acres_i}) = \beta_1\mu+ \theta log(Property\ Values_i) + g_{\mu}(X_i|\mu) + u_i\ \ \ (1)$$`
+
+`$$log(Property\ Values_i) = f_{\mu}(X_i|\mu) + v_i\ \ \ (2)$$`
+
+&lt;br&gt;
+
+**Data**:
+
+`$$X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+
+`$$\mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+
+&lt;br&gt;
+
+**Hypotheses**:
+`$$H_0: \beta_1 = 0, H_a: \beta_1 \neq 0$$`
+
+---
+# DAG-work
+
+.center[&lt;img src="dagitty-model(1).jpg" style="width: 100%", class="center"/&gt;]
+
+---
+# DAG-work 2
+
+.center[&lt;img src="dagitty-model(2).jpg" style="width: 100%", class="center"/&gt;]
+
+---
+# Why 'Acres'/'Perimeter' is Bad Control
+
+.center[&lt;img src="dagitty-model(3).jpg" style="width: 100%", class="center"/&gt;]
+---
+
+---
+# Cost Monitoring (General)
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+`$$Total\ Cost = f(h(L,K),\tilde{P})$$`
+`$$Total\ Benefit = g(h(L,K), Env)$$`
+
+Ideally, we want...
+
+`$$\frac{\partial f}{\partial h}\frac{\partial h}{\partial K} = \frac{\partial g}{\partial h}\frac{\partial h}{\partial K}$$`
+But in both cases, `\(h\)` is not observed. So we settle for next-best estimate, technical efficiency in costs.
+---
+# Stratified Cost Index
+&lt;br&gt;
+Historically, wildfire suppression costs went *unmonitored.*
+
+--
+
+The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a group of economists under the Bush admin to correct this gap. Big econometric (and accounting project.)
+
+**SCI** addresses need: time-invariant (ignoring inflation) cost predictions of wildfire.
+
+--
+
+ - **Idea** : Rather than perform cost-benefit analysis, the **SCI** provides historic context for fire suppression costs, given local features relevant to fire spread and costs.
+
+**SCI Approach:** train an OLS model using features derived from the *point of ignition* and *relevant to fire spread/local assets at risk* on historic fire suppression costs `\(\rightarrow\)` predict new wildfire expenditures.
+
+--
+
+Use **predictions** from SCI and their standard errors as guideline to audit new fires
+
+---
+# What does the kernel Look Like?
+
+Pretty hard to figure out, with as many inputs as we have, what actually matters.
+
+--
+
+Harder still - these functions are not linear. How do we get interpretable 'coefficient equivalents'? How about partial gradients?
+
+`$$\hat{\beta}_{nonlin} \equiv \frac{\partial f}{\partial X_i}*X_i$$`
+
+Shown: good performance across interpretability metrics in lab settings.
+
+However - if we have very 'flat' gradients...
+
+`$$\frac{\partial f}{\partial X_i} \approx 0$$` 
+
+...we only have local information about the activation 
+
+- could be flat because at peak of mountain (meaning it's really important to the function) or may be flat everywhere.
+
+---
+# Kernel, improved
+
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+
+Good news: Because Neural Networks are differentiable everywhere, I can use a very cool tool to explore what I'm controlling for in full.
+
+Known as 'integrated gradients' essentially it calculates an approximate Riemann sum of gradients to get true conditional value, following the Gauss-Legendre formula.
+
+---
+# Visualizing the Kernel
+
+&lt;br&gt;&lt;br&gt;
+
+`$$IG := (x_i - x_i') \times \int^1_{\alpha = 0}\frac{\partial NN(x_i' + \alpha*(x_i - x_i'))}{\partial x_i}$$`
+Where `\(x_i\)` is an image, but practically speaking could be as fine-grained as a single channel-pixel.
+
+--
+
+This buys me an 'explainability' map over the features I put into the CCT, and allows me to point you directly at what the meta-learner uses to adjust treatment propensity and outcome level.
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="Kernel1HF.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric (point of ignition)]
+
+.center[&lt;img src="IgnitionPtHFF.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="HFKernel1.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="KernelZoomHF-2.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel
+.center[**Holiday Farm Fire:** NLCD Impermeability metric]
+
+.center[&lt;img src="HFKernel-4.png" style="width: 60%", class="center"/&gt;]
+
+---
+# Kernel: Utah
+.center[**Range Fire:** NLCD Impermeability metric]
+
+
+.center[&lt;img src="PropertyAtRisk.png" style="width: 60%", class="center"/&gt;]
+
+
+---
+# Kernel: Utah
+.center[**Range Fire:** Slope DEM metric]
+
+
+.center[&lt;img src="UtahFire-slope.png" style="width: 60%", class="center"/&gt;]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
