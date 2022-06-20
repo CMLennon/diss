@@ -1651,6 +1651,19 @@ include_graphics('results-2-2.png')
 It seems as if, conditional on publishing a cost estimate, average costs per acre rise by roughly %.44 for a corresponding 1% increase in estimate, but also appear to still respond to total property value within 20 km.
 
 ---
+# Nonlinear Ignition Point Data
+
+Maybe, this has NOTHING do do with spatial data at all. It's all nonlinearity.
+
+--
+
+Tried XGBoost on point level data - improved estimates from SCI (and actually does not so bad)
+
+```{r, echo = FALSE}
+include_graphics('Xgboostres.png')
+```
+
+---
 # What does the kernel Look Like?
 
 Pretty hard to figure out, with as many inputs as we have, what actually matters.
