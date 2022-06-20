@@ -1677,6 +1677,9 @@ $$\hat{\beta}_{nonlin} \equiv \frac{\partial f}{\partial X_i}*X_i$$
 
 Shown: good performance across interpretability metrics in lab settings.
 
+---
+# What does the kernel look like?
+
 However - if we have very 'flat' gradients...
 
 $$\frac{\partial f}{\partial X_i} \approx 0$$ 
