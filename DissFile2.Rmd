@@ -1638,7 +1638,8 @@ Alternative - test intensive margin, ie, for fires that have forecasts, do rate 
 
 --
 
-$$\small \Delta_{day} log(AvgCostPerAcre_{i,t}) = $$
+$$\small \Delta_{day} log(AvgCostPerAcre_{i,t}) =$$
+
 $$\small \beta_0 + X_i\gamma + \beta_1 log(PropertyValue_{20km, i}) + \alpha_1 log(AvgCostPerAcre_{i,t-1}) + \alpha_2(EstCost)$$
 ---
 # Bare Bones Results
