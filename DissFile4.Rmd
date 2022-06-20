@@ -1,45 +1,66 @@
-<!DOCTYPE html>
-<html lang="" xml:lang="">
-  <head>
-    <title>Dissertation</title>
-    <meta charset="utf-8" />
-    <meta name="author" content="Connor Lennon" />
-    <script src="DissFile2_files/header-attrs/header-attrs.js"></script>
-    <link href="DissFile2_files/remark-css/default.css" rel="stylesheet" />
-    <link href="DissFile2_files/remark-css/metropolis.css" rel="stylesheet" />
-    <link href="DissFile2_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
-    <link rel="stylesheet" href="my-css.css" type="text/css" />
-  </head>
-  <body>
-    <textarea id="source">
-class: center, middle, inverse, title-slide
-
-# Dissertation
-## Essays on ML in Causal Inference and Environmental Economics
-### Connor Lennon
-### Summer 2022
-
 ---
-
+title: "Dissertation"
+subtitle: "Essays on ML in Causal Inference and Environmental Economics"
+author: "Connor Lennon"
+date: "Summer 2022"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
 class: inverse, middle
 
+```{r Setup, include = F}
+options(htmltools.dir.version = FALSE)
+library(pacman)
+p_load(leaflet, ggplot2, ggthemes, viridis, dplyr, magrittr, knitr, gapminder, av, gganimate(), emo, ggdag, dagitty, data.table, patchwork)
+# Define pink color
+red_pink <- "#e64173"
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#3b3b9a"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+# Notes directory
+dir_slides <- "/Users/connor/Desktop/GithubProjects/Econometrics/EC421/Spring2021/LectureNotes/01-intro/"
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  # dpi = 300,
+  # cache = T,
+  warning = F,
+  message = F
+)
+```
 
-
-&lt;style type="text/css"&gt;
+```{css, echo = F}
 @media print {
   .has-continuation {
     display: block !important;
   }
 }
-&lt;/style&gt;
+```
 
 
-# Introduction &amp; Preamble
+# Introduction & Preamble
 
 ---
 # Abstract
 
-.center[.hi[Plan of Attack] ~ .hi-black[45 minutes of presenting me &amp; my work]]
+.center[.hi[Plan of Attack] ~ .hi-black[45 minutes of presenting me & my work]]
 
 .center[.qa[What I've done, and what I'm working on]]
 
@@ -70,11 +91,11 @@ class: middle, inverse
 
 --
 
-**IV problem** Causal Effect, `\(X \rightarrow Y\)` is confounded by some unobserved variable, but there exists some `\(Z\)`, such that `\(Z \rightarrow X\)` and  `\(Z \perp \!\!\! \perp Y | X\)`
+**IV problem** Causal Effect, $X \rightarrow Y$ is confounded by some unobserved variable, but there exists some $Z$, such that $Z \rightarrow X$ and  $Z \perp \!\!\! \perp Y | X$
 
 Best understood through example: 
 
-**Card Instrument**: Card (1995) `\(^t\)`.footnote[t: 1995. “Aspects of Labour Economics: Essays in Honour of John Vanderkamp.” In. University of Toronto Press.] interested in the returns to schooling `\(Schooling_i \rightarrow Income_i\)`, but `\(Parent\ Income_i \rightarrow Schooling_i\)` and `\(Parent\ Income_i \rightarrow Income_i\)`. 
+**Card Instrument**: Card (1995) $^t$.footnote[t: 1995. “Aspects of Labour Economics: Essays in Honour of John Vanderkamp.” In. University of Toronto Press.] interested in the returns to schooling $Schooling_i \rightarrow Income_i$, but $Parent\ Income_i \rightarrow Schooling_i$ and $Parent\ Income_i \rightarrow Income_i$. 
 
  - Solution: Use binary *birth proximity* to a college campus as instrument for schooling. 
 
@@ -82,7 +103,20 @@ Best understood through example:
 # Instrument, Continuous
 
 .pull-left[
-&lt;img src="DissFile2_files/figure-html/ivdag-1.png" width="100%" height="100%" style="display: block; margin: auto;" /&gt;
+```{r, ivdag,out.width = "100%", out.height = "100%", echo = FALSE}
+#p_load(rethinking)
+g <- dagitty('dag {
+    Education [pos=".5,1"]
+    Income [pos="1,1"]
+    DistanceFromCampus [pos="0,1"]
+    ParentalIncome [pos=".5,.5"]
+    
+  DistanceFromCampus -> Education -> Income
+  ParentalIncome -> Income
+  ParentalIncome -> Education
+}')
+plot(g)
+```
 
 
 If distance .**linearly** affects education: 2SLS
@@ -99,15 +133,17 @@ Single continuous instrument idea: the .hi[continuous instrument] causes a chang
 
 Extending the previous: Want to estimate the effect of schooling on income, but would prefer to use intensive margin effect of distance on schooling.
 
-`$$\small ParentalIncome_i \rightarrow Income_i$$` 
-`$$\small ParentalIncome_i \rightarrow Schooling_i$$`
+$$\small ParentalIncome_i \rightarrow Income_i$$ 
+$$\small ParentalIncome_i \rightarrow Schooling_i$$
 
 ]
 ---
 # Illustrated
 
 .pull-left[
-&lt;img src="iv/gganim_plot0026.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv/gganim_plot0026.png")
+```
 ]
 
 .pull-right[
@@ -116,46 +152,25 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = Z + \frac{W}{2} + \varepsilon\)`
+- $X = Z + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
-
----
-count: false
-# Illustrated
-
-.pull-left[
-&lt;img src="iv/gganim_plot0052.png" width="640" style="display: block; margin: auto;" /&gt;
-]
-
-.pull-right[
-
-Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
-
-- Where Y = outcome, X = endogenous variable, Z = instrument,
-
-- `\(\beta = 1\)`
-
-- `\(X = Z + \frac{W}{2} + \varepsilon\)`
-
-- `\(Y = X + W + \epsilon\)`
-
-- `\(Z \sim unif(-50, 50)\)`
-]
 
 ---
 count: false
 # Illustrated
 
 .pull-left[
-&lt;img src="iv/gganim_plot0054.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv/gganim_plot0052.png")
+```
 ]
 
 .pull-right[
@@ -164,20 +179,47 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = Z + \frac{W}{2} + \varepsilon\)`
+- $X = Z + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
+]
+
+---
+count: false
+# Illustrated
+
+.pull-left[
+```{r, echo = FALSE}
+include_graphics("iv/gganim_plot0054.png")
+```
+]
+
+.pull-right[
+
+Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
+
+- Where Y = outcome, X = endogenous variable, Z = instrument,
+
+- $\beta = 1$
+
+- $X = Z + \frac{W}{2} + \varepsilon$
+
+- $Y = X + W + \epsilon$
+
+- $Z \sim unif(-50, 50)$
 ]
 ---
 count: false
 # Illustrated
 
 .pull-left[
-&lt;img src="iv/gganim_plot0099.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv/gganim_plot0099.png")
+```
 ]
 
 .pull-right[
@@ -186,13 +228,13 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = Z + \frac{W}{2} + \varepsilon\)`
+- $X = Z + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
@@ -205,7 +247,7 @@ Suppose the true effect is driven by how many college fliers you see (eg, a nonl
 
 --
 
-- If we know the function - we can use it directly as we did above (instrument using `\(f(z)\)`)!
+- If we know the function - we can use it directly as we did above (instrument using $f(z)$)!
 
 --
 
@@ -215,7 +257,9 @@ Suppose the true effect is driven by how many college fliers you see (eg, a nonl
 # Nonlinear
 
 .pull-left[
-&lt;img src="ivsq/gganim_plot0026.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("ivsq/gganim_plot0026.png")
+```
 ]
 
 .pull-right[
@@ -224,13 +268,13 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
@@ -240,7 +284,9 @@ count: false
 # Nonlinear
 
 .pull-left[
-&lt;img src="ivsq/gganim_plot0043.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("ivsq/gganim_plot0043.png")
+```
 ]
 
 .pull-right[
@@ -249,13 +295,13 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 ---
@@ -263,7 +309,9 @@ count: false
 # Nonlinear
 
 .pull-left[
-&lt;img src="ivsq/gganim_plot0055.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("ivsq/gganim_plot0055.png")
+```
 ]
 
 .pull-right[
@@ -272,20 +320,22 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 ---
 count:false
 # Nonlinear
 
 .pull-left[
-&lt;img src="ivsq/gganim_plot0088.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("ivsq/gganim_plot0088.png")
+```
 ]
 
 .pull-right[
@@ -294,13 +344,13 @@ Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respecti
 
 - Where Y = outcome, X = endogenous variable, Z = instrument,
 
-- `\(\beta = 1\)`
+- $\beta = 1$
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
@@ -323,7 +373,7 @@ Despite the interest, much of the intuition from existing econometric methods do
 
 --
 
-**A** __(Our Contribution)__ Predicts `\(X\)` well, but the resulting `\(\hat{\beta}\)` is biased in interpretable ways.
+**A** __(Our Contribution)__ Predicts $X$ well, but the resulting $\hat{\beta}$ is biased in interpretable ways.
 
 ---
 # Intuition
@@ -332,11 +382,11 @@ Much of the assumptions around the first stage of 2SLS center around optimizing 
 
 --
 
-1. Relevance, ie, that your instrument has explanatory power ✅
+1. Relevance, ie, that your instrument has explanatory power `r emo::ji('check')`
 
 --
 
-2. Exogeneity, which is generally spoken about in terms of correlations, ie, `\(corr(u,\textbf{z}) = 0\)`.
+2. Exogeneity, which is generally spoken about in terms of correlations, ie, $corr(u,\textbf{z}) = 0$.
 
 --
 
@@ -349,7 +399,7 @@ Using .hi-purple[machine learning] introduces new concerns:
 
 -  Potentially Recovering endogeneity - overfitting, just as in any prediction task, is doubly dangerous in causal estimation
 
--  Complex Exclusion restrictions - The set of exclusion restrictions under consideration is much larger. Instead of  `\(corr(\varepsilon_i, \textbf{z}) = 0\)`, need `\(E(\varepsilon_i|\textbf{z}) = 0\)`.
+-  Complex Exclusion restrictions - The set of exclusion restrictions under consideration is much larger. Instead of  $corr(\varepsilon_i, \textbf{z}) = 0$, need $E(\varepsilon_i|\textbf{z}) = 0$.
 
 -  Increasing Bias - Bias-variance tradeoff can lead to inflated coefficients in the second stage of 2SLS if variance-reduction is primary strategy.
 
@@ -358,9 +408,9 @@ These factors make using machine-learned first stages tricky to fit into existin
 ---
 # Work
 
-&lt;br&gt;
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
+<br>
 
 
 .center[Decompose bias from off-the-shelf machine learning used in the first stage]
@@ -374,18 +424,18 @@ These factors make using machine-learned first stages tricky to fit into existin
 
 Bias in 2SLS breaks down into an informative form-
 
-`$$\frac{Cov(\hat{x}, w)}{Var(\hat{x})} = \frac{\beta_1Cov(\hat{x},e) + Cov(\hat{x},u)}{Var(\hat{x})}$$`
+$$\frac{Cov(\hat{x}, w)}{Var(\hat{x})} = \frac{\beta_1Cov(\hat{x},e) + Cov(\hat{x},u)}{Var(\hat{x})}$$
 --
 
-- In OLS, `\(\beta_1Cov(\hat{x},e)\)` is mechanically 0, allowing for `\(Cov(\hat{x},u)\)` to be assumed 0 given the estimating model.
-
---
-
-- .hi-orange[However], the ML estimate of the first stage does not necessarily find `\(Cov(\hat{x},u) = 0\)`.
+- In OLS, $\beta_1Cov(\hat{x},e)$ is mechanically 0, allowing for $Cov(\hat{x},u)$ to be assumed 0 given the estimating model.
 
 --
 
-- Additionally, nonlinear first stages can produce non-orthogonal errors, meaning `\(\beta_1Cov(\hat{x},e) \neq 0\)`
+- .hi-orange[However], the ML estimate of the first stage does not necessarily find $Cov(\hat{x},u) = 0$.
+
+--
+
+- Additionally, nonlinear first stages can produce non-orthogonal errors, meaning $\beta_1Cov(\hat{x},e) \neq 0$
 
 Let's return to the toy example from before.
 
@@ -393,18 +443,20 @@ Let's return to the toy example from before.
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst/gganim_plot0026.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst/gganim_plot0026.png")
+```
 ]
 
 .pull-right[
 
 Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 ---
@@ -412,18 +464,20 @@ count:false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst/gganim_plot0043.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst/gganim_plot0043.png")
+```
 ]
 
 .pull-right[
 
 Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
@@ -433,18 +487,20 @@ count: false
 
 
 .pull-left[
-&lt;img src="iv_bst/gganim_plot0055.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst/gganim_plot0055.png")
+```
 ]
 
 .pull-right[
 
 Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 
@@ -453,18 +509,20 @@ count: false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst/gganim_plot0088.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst/gganim_plot0088.png")
+```
 ]
 
 .pull-right[
 
 Colors represent magnitude of instrument Z, X, Y dimensions are X and Y respectively.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[
@@ -478,18 +536,20 @@ Just .hi[Forbidden Regression?]
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0001.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0001.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -499,18 +559,20 @@ count: false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0026.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0026.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -519,18 +581,20 @@ count:false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0053.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0053.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -539,18 +603,20 @@ count:false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0064.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0064.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -559,18 +625,20 @@ count: false
 # Nonlinear
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0079.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0079.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -582,18 +650,20 @@ count: false
 
 
 .pull-left[
-&lt;img src="iv_bst_lin/gganim_plot0099.png" width="640" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv_bst_lin/gganim_plot0099.png")
+```
 ]
 
 .pull-right[
 
-Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(\hat{x},e) = 0\)`, and increasing `\(Var(\hat{x})\)`.
+Linearization reduces bias (in this case) by mechanically setting $\beta_1Cov(\hat{x},e) = 0$, and increasing $Var(\hat{x})$.
 
-- `\(X = .01Z^2 + \frac{W}{2} + \varepsilon\)`
+- $X = .01Z^2 + \frac{W}{2} + \varepsilon$
 
-- `\(Y = X + W + \epsilon\)`
+- $Y = X + W + \epsilon$
 
-- `\(Z \sim unif(-50, 50)\)`
+- $Z \sim unif(-50, 50)$
 ]
 
 .center[Still may be biased, even in simple case]
@@ -601,16 +671,20 @@ Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(
 ---
 # Simulation Results
 
-&lt;img src="simresults.png-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE, out.width = "80%"}
+include_graphics("simresults.png-1.png")
+```
 
 .center[More 'linear' the model, the less bias it produces]
 
 ---
 # Flexibility and Decomposition
 
-&lt;img src="cv-biasdecomp.png-1.png" width="1301" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("cv-biasdecomp.png-1.png")
+```
 
-- Flexibility increases model's ability to pick up on `\(cov(\hat{x}, u)\)` term, potentially increasing bias in estimates of `\(\beta_1\)`.
+- Flexibility increases model's ability to pick up on $cov(\hat{x}, u)$ term, potentially increasing bias in estimates of $\beta_1$.
 
 ---
 # Discussion: A Way Forward
@@ -618,31 +692,35 @@ Linearization reduces bias (in this case) by mechanically setting `\(\beta_1Cov(
 One possible way through this is by using out of sample predictions from a split-sample design machine learning model.
 
 .pull-left[
-&lt;img src="iv-sq-bst-lin-os.gif" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv-sq-bst-lin-os.gif")
+```
 ]
 
 .pull-right[
 
-2 downsides - It relies on `\(IID\)` definition assumed in most DGPs
+2 downsides - It relies on $IID$ definition assumed in most DGPs
 
-**1.** `\(E[Z_i|u_i] = 0\)`
+**1.** $E[Z_i|u_i] = 0$
 
 **2.** Sample size must be reasonably large, or estimates can end very unpredictably bad, worse than 2SLS or IV, even in the nonlinear case
 
 ]
 
 ---
-#A Way Forward (&gt; Medium Data Only)
+#A Way Forward (> Medium Data Only)
 
 .pull-left[
-&lt;img src="iv-sq-bst-lin-os-sm.gif" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("iv-sq-bst-lin-os-sm.gif")
+```
 ]
 
 .pull-right[
 
-2 downsides - It relies on `\(IID\)` definition assumed in most DGPs
+2 downsides - It relies on $IID$ definition assumed in most DGPs
 
-**1** `\(E[Z_i|u_i] = 0\)`
+**1** $E[Z_i|u_i] = 0$
 
 **2** Sample size must be reasonably large, or estimates can end very unpredictably, with large variance in point estimates, larger than those seen in 2SLS or IV, even in some nonlinear cases
 
@@ -655,7 +733,7 @@ One possible way through this is by using out of sample predictions from a split
 
 __Conclusion__
 
-- Improvements in first stage fit from out of the box machine learning will often not improve estimates of `\(\beta\)` in the second stage
+- Improvements in first stage fit from out of the box machine learning will often not improve estimates of $\beta$ in the second stage
 
 - In fact, flexibility appears to increase the chance of fitting bad variation into the model, and puts even more pressure on the assumptions made on the data
 
@@ -671,11 +749,50 @@ class: middle, inverse
 ## Revisiting the Stratified Cost Index
 
 ---
+```{r, echo = F, fig.height = 2, fig.width = 3}
+p_load(magrittr, patchwork, tidyverse, grid)
 
+dfwui = data.frame(wui = c(30782682, 36946860, 43434112), years = c(1990,2000,2010))
+
+dffs = data.frame(fs_cost = c(397952000,206120000,377466000,240436000,918335000,477126000,701183000,284148000, 416704000,515516000,1410802000,952696000,1674040000,1327138000,1007244000, 818954000, 1704477000, 1620145000,1585856000,920529000,809499000,1374525000, 807800000, 1753500000, 2211700000,1523300000,3034200000,2180600000, 2622400000,  2828500000, 3651700000), years = c(1990:2020), pfire = c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA ,NA,NA,NA,NA,NA,NA,622700000 ,573500000, 494100000,498900000,574200000,590000000,606300000,638300000, 669500000, 639300000))
+
+dfwui %<>% mutate(wui_nrm = (wui - mean(wui))/sd(wui), wuith = wui/100000)
+dffs %<>% mutate(fs_cost_nrm = (fs_cost - mean(fs_cost))/sd(fs_cost), fsth = fs_cost/1000000, pfireth = pfire/1000000)
+
+droughtdt = read_csv('/home/connor/Downloads/drought-regional.csv')
+
+drought = droughtdt %>% mutate(year = year(ValidEnd)) %>% group_by(year) %>% summarize(max_drought = max(D4)/max(D0 + D1 + D2 + D3 + D4)) %>% arrange(year)
+
+pd = ggplot(drought, aes(x = year, y = max_drought))+ geom_smooth(aes(color = 'Maximum Pct of Land in Drought'), se = FALSE) + theme_minimal()+ scale_y_continuous(name =  '', labels = scales::percent) + labs(x = '') + scale_color_manual(name = '', label ='Maximum Annual %', values = "#db9200") + geom_hline(color = 'black', yintercept = 0)+ labs('Drought in Western US (% of land)') +theme(title = element_text('Drought in Western US (% of land)', colour = "#db9200", size = 8), legend.text = element_blank(), legend.position = "none") +ggtitle('Drought in Western US (% of land)')
+
+pfs = ggplot(data = dffs, aes(x = years, y = fsth)) + geom_line(aes(colour = 'Total Fire Suppression'))  + geom_line(aes(y = pfireth, colour = 'Total Spending on All Fuel Treatment')) + theme_minimal()+ scale_y_continuous(name =  '', labels = scales::dollar_format()) + labs(x = '') + scale_color_manual(name = '', label ='Total Fire Suppression (millions)', values = c("#db9200",'#027802')) + geom_hline(color = 'black', yintercept = -1.5) + geom_vline(color = 'black', xintercept = 1990) + theme(legend.text = element_blank(), legend.position = "none")+ labs(title ="Total Fire Suppression (millions)", subtitle = "Total Expenditure on Fuel Treatments (millions)") +theme(plot.title =  element_text("Total Fire Suppression (millions)",color = "#db9200", size = 8),
+    axis.title.y = element_text(color = "#db9200", size=8, vjust = 1, hjust = 8, angle = 0), plot.subtitle = element_text("Total Expenditure on Fuel Treatments (millions)",color = '#027802', size = 8)
+    
+  )
+                                                                                                                                                        
+pwui = ggplot(data = dfwui, aes(x = years, y = wuith)) + geom_line(aes(colour ='Homes in WUI (Normalized)')) + theme_minimal() +scale_y_continuous(name =  '', labels = scales::label_comma(), limits = c(300,450))+ labs(x = '')+ scale_color_manual(name = '', label ='Wui Homes (100,000s)', values = '#027802')+ geom_hline(color = 'black', yintercept = 300) + geom_vline(color = 'black', xintercept = 1990) + theme(legend.text = element_blank(), legend.position = "none")+ labs(title ="Homes in WUI (100,000s)") +theme(title = element_text("Homes in WUI (100,000s)",color = '#027802', size = 8),
+    axis.title.y = element_text(color = '#027802', size=8, vjust = 1, hjust = 8, angle = 0),
+    )                
+
+
+
+p3 = ggplot(data = dffs, aes(x = years, y = fsth)) + geom_line(aes(colour = 'Total Fire Suppression')) + geom_line(data = dfwui, aes(y = wuith, colour ='Homes in WUI (Normalized)')) + theme_minimal()+ scale_y_continuous(name =  'Total Fire Suppression (millions) (2010)', labels = scales::dollar_format(), sec.axis = sec_axis(name ='Homes in WUI (100,000s)', trans=~.*(1/10), labels = scales::label_comma())) + labs(x = 'Year') + scale_color_manual(name = '', labels =c('Total Fire Suppression (millions)', 'WUI homes (100,000s)'), values = c('#027802', "#db9200")) + geom_hline(color = 'black', yintercept = -1.5) + geom_vline(color = 'black', xintercept = 1990) + theme(legend.text = element_blank(), legend.position = "none")+theme(
+    axis.title.y = element_text(color = "#db9200", size=12, vjust = .2, hjust = 8, angle = 0),
+    axis.title.y.right = element_text(color = '#027802', size=12, vjust = .2, hjust = -3, angle = 0)
+  )
+
+#pd
+#p1
+#axis.title.y.right = element_text(color = '#027802', size=12, vjust = 0, hjust = -3, angle = 0)
+#sec.axis = sec_axis(name ='Homes in WUI (100,000s)', trans=~.*(1/10), labels = scales::label_comma())                                                                                                                                                                                                                                                                    #caption = "WUI: Wildland Urban Interface. \n Fire suppression data from NIFC \n Home-ownership data from Radeloff et al. (2019) supplemental content")
+
+#pfs
+#<img src="fshist-small.png" style="width: 72%"/>
+```
 
 class: clear
 
-&lt;img src="retardant-drop-sq.jpeg" style="width: 110%", class="center"/&gt;
+<img src="retardant-drop-sq.jpeg" style="width: 110%", class="center"/>
 
 .center[.smaller[*McCash fire, threatening California Seqouia: Inciweb, September 16, 2021*]]
 
@@ -697,7 +814,10 @@ Predictions are only as good as the data used to produce them
 
 **Problem:** climate change and development are .hi[data drift].
 
-&lt;img src="DissFile2_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+```{r, echo = F, fig.height = 6, fig.width = 7}
+#grid.text("Total Expenditure on Fuel Treatment", x = unit(0.95, "npc"), y = unit(0.96, "npc"))
+pfs/(pd+pwui)
+```
 
 
 ---
@@ -707,7 +827,7 @@ Predictions are only as good as the data used to produce them
 
 --
 
-&lt;br&gt;
+<br>
 
 .pull-left[**Calf Canyon, NM, May 2022**
 
@@ -757,7 +877,7 @@ Destroyed Homes: 20 (final)
 
 ---
 # Why the SCI?
-&lt;br&gt;
+<br>
 Historically, wildfire suppression costs went *unmonitored.*
 
 --
@@ -773,11 +893,11 @@ The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a
 ---
 #How the SCI?
 
-&lt;br&gt;
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
+<br>
 
-**SCI Approach:** regress *point of ignition* characteristics *relevant to fire spread/local assets at risk* on historic fire suppression costs `\(\rightarrow\)` predict new wildfire expenditures.
+**SCI Approach:** regress *point of ignition* characteristics *relevant to fire spread/local assets at risk* on historic fire suppression costs $\rightarrow$ predict new wildfire expenditures.
 
 --
 
@@ -788,7 +908,7 @@ The .hi-orange[Stratified Cost Index], or .hi-orange[SCI] developed in 2007 by a
 
 Like many observational studies, the .hi-orange[SCI] relies on _conditionally_ as good as random variation.
 
-- Where `\(Y\)` is an outcome of interest, `\(z\)` is a treatment variable and `\(X\)` is a set of controls, assumptions for the identification strategy are:
+- Where $Y$ is an outcome of interest, $z$ is a treatment variable and $X$ is a set of controls, assumptions for the identification strategy are:
 
 $$
 Y = \beta_0 + z\beta_1 + X\gamma+ u_i \tag{*} 
@@ -806,8 +926,8 @@ This is a **strong assumption**
 
 ---
 # Causal Assumptions
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 $$
 Y = \beta_0 + z\beta_1 + X\gamma+ u_i \tag{*} 
 $$
@@ -816,15 +936,15 @@ $$
 z \mathrel{\unicode{x2AEB}}u|X \tag{1}
 $$
 
-OLS and ignition-level measures of important variables are unlikely to be a sufficiently rich `\(X\)` to satisfy assumption (1).
+OLS and ignition-level measures of important variables are unlikely to be a sufficiently rich $X$ to satisfy assumption (1).
 
 - Using every observation of spatially-varying controls make the problem ill-posed, many more individual square feet than wildfires in the United States.
 
 ---
 # Solution
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 .center[Use .hi-black[D]ouble/.hi-black[D]ebiased .hi-black[M]achine .hi-black[L]earning (.hi-black[D/DML])] 
 
@@ -845,7 +965,7 @@ OLS and ignition-level measures of important variables are unlikely to be a suff
 
 **Example:** CZU Complex (2020) Raster
 
-&lt;img src="CZUComplex2020.png" style="width: 60%", class="center"/&gt;
+<img src="CZUComplex2020.png" style="width: 60%", class="center"/>
 
 ]
 
@@ -854,7 +974,7 @@ OLS and ignition-level measures of important variables are unlikely to be a suff
 ---
 # Research
 
-&lt;br&gt;
+<br>
 
 .center[**Headline Results**]
 
@@ -863,18 +983,18 @@ __1.__  Spatially Corrected Estimates? **Result:** - **Much** less important tha
 ---
 # Research
 
-&lt;br&gt;
+<br>
 
 .center[**Headline Results**]
 
-__2.__ Improve the SCI? **Result:** Not just the SCI. Beats even regression models with full perimeter information. Improves `\(R^2\)` from 60% (In sample) (35-60%) `\(\rightarrow\)` 85% out of sample relative to reported estimates, and extends to fires previously considered 'too small' for cost forecasts.
+__2.__ Improve the SCI? **Result:** Not just the SCI. Beats even regression models with full perimeter information. Improves $R^2$ from 60% (In sample) (35-60%) $\rightarrow$ 85% out of sample relative to reported estimates, and extends to fires previously considered 'too small' for cost forecasts.
 
 __2.5__ Improve the SCI? **Result:** Using bootstrapped kendall's tau, the ViT-based model is significantly more correlated with both total final cost and per-acre final cost than reported SCI estimates, while being less correlated to total nearby property value and total nearby incomes.
 
 ---
 # Research
 
-&lt;br&gt;
+<br>
 
 .center[**Headline Results**]
 
@@ -890,7 +1010,7 @@ __3.5__ Legacy of SCI? **Result:** Additional expenditures on wildfires after th
 
 .center[OOD test - 3150 wildfires, 2020-2022 April, use final 300 fires as OOD test]
 
-.center[&lt;img src="GACCMap.png" style="width: 100%", class="center"/&gt;]
+.center[<img src="GACCMap.png" style="width: 100%", class="center"/>]
 
 ---
 #  Data Sources
@@ -908,26 +1028,26 @@ IRWIN government database: live feed of all updates to fire incidents, including
 
 __Weather__: GRIDMET gridded weather data (NARR-based) - provides ERC and daily wind, precip etc.
 
-__Fuels, Topological Data &amp; Values at Risk__: LANDFIRE and WFDSS
+__Fuels, Topological Data & Values at Risk__: LANDFIRE and WFDSS
 
 ---
 # Fitting
 
 Model predictably underestimates highs and overestimates lows
 
-.center[&lt;img src="firecostfit.png" style="width: 100%", class="center"/&gt;]
+.center[<img src="firecostfit.png" style="width: 100%", class="center"/>]
 
 ---
 # Crossfitting
 
 However, in general the errors in each model are small when the companion prediction errors are large
 
-.center[&lt;img src="crossfit.png" style="width: 100%", class="center"/&gt;]
+.center[<img src="crossfit.png" style="width: 100%", class="center"/>]
 
 ---
 class: clear
 
-.center[&lt;img src="results.png" style="width: 90%", class="center"/&gt;]
+.center[<img src="results.png" style="width: 90%", class="center"/>]
 
 ---
 # Q: Is this just nonlinearity?
@@ -935,11 +1055,15 @@ class: clear
 .center[Let's test] 
 
 .pull-left[
-&lt;img src="kt_peracrecosts.png" width="100%" height="100%" style="display: block; margin: auto;" /&gt;
+```{r, echo = F, out.height = "100%", out.width = "100%"}
+include_graphics('kt_peracrecosts.png')
+```
 ]
 
 .pull-right[
-&lt;img src="kt_homesdestroyed.png" width="100%" height="100%" style="display: block; margin: auto;" /&gt;
+```{r, echo = F, out.height = "100%", out.width = "100%"}
+include_graphics('kt_homesdestroyed.png')
+```
 ]
 .center[bootstrap Kendall's Tau from dataset]
 
@@ -947,15 +1071,15 @@ class: clear
 ---
 # SCI and Income More Correlated?
 
-&lt;br&gt;
+<br>
 
-We can use correlation between reported `\(SCI\)` final costs and the `\(SCI_{nn}\)` final costs to see if conditioning predictions directly on property value leads to predicted costs that are more correlated with income.
+We can use correlation between reported $SCI$ final costs and the $SCI_{nn}$ final costs to see if conditioning predictions directly on property value leads to predicted costs that are more correlated with income.
 
-`$$H_0: corr_1(SCI, Income_{20km}) &lt;= corr_2(SCI_{nn}, Income_{20km})$$`
+$$H_0: corr_1(SCI, Income_{20km}) <= corr_2(SCI_{nn}, Income_{20km})$$
 
 --
 
-`$$p(H_0|corr_1 = .10, corr_2 = .03, n = 424) \approx 0.029$$`
+$$p(H_0|corr_1 = .10, corr_2 = .03, n = 424) \approx 0.029$$
 --
 
 Tests on correlation between **property value, per-capita income and summed income** also reject in equivalent tests.
@@ -967,20 +1091,22 @@ Tests on correlation between **property value, per-capita income and summed inco
 ---
 # SCI and Income More Correlated?
 
-&lt;img src="propvals_correlationmap.jpg" width="65%" style="display: block; margin: auto;" /&gt;
+```{r, echo = F, out.width = "65%"}
+include_graphics('propvals_correlationmap.jpg')
+```
 
 
 
 ---
 # Do Fire Managers Respond to Costs?
 
-.center[&lt;img src="RDD.png" style="width: 100%", class="center"/&gt;]
+.center[<img src="RDD.png" style="width: 100%", class="center"/>]
 
 
 ---
 
 # Conclusion
-&lt;br&gt;&lt;br&gt;&lt;br&gt;
+<br><br><br>
 
  - Once adjusting for non-invariant environmental factors, .hi[property values] appear to have an extremely small (insignificant) effect on suppression costs
  
@@ -1007,26 +1133,26 @@ class: middle, inverse
 
 __4 General Cases__
 
-In estimating `\(\beta_1Corr(\hat{x},e)\)`, econometrics has a very limited 'intuitional toolbox' because this term drops out of standard OLS.
+In estimating $\beta_1Corr(\hat{x},e)$, econometrics has a very limited 'intuitional toolbox' because this term drops out of standard OLS.
 
 --
 
-The effect on bias can be digested into `\(Sign\{\beta_1\} \cdot Sign\{Corr(\hat{x},x)\sigma_x - \sigma_{\hat{x}}\}\)`
+The effect on bias can be digested into $Sign\{\beta_1\} \cdot Sign\{Corr(\hat{x},x)\sigma_x - \sigma_{\hat{x}}\}$
 
 --
 
-Quickly noticable is that if the ML algorithm perfectly reproduces estimand `\(x\)`, this term is not of concern. Similarly, if our causal parameter of interest is equal to 0, we are not concerned.
+Quickly noticable is that if the ML algorithm perfectly reproduces estimand $x$, this term is not of concern. Similarly, if our causal parameter of interest is equal to 0, we are not concerned.
 
 --
 
-If we define a variance reduction strategy as `\(min_{\hat{x}}\ \sigma_{\hat{x_s}},\ \hat{x_s} \in \hat{X}\ s.t. Corr(\hat{x_s}, x) &gt; Corr(\hat{x}_{-s}, x, x)\)`, variance reduction causes problems at a ridge of fixed points that changes with the explanatory power of the algorithm &amp; `\(\sigma_{\hat{x}}\)`
+If we define a variance reduction strategy as $min_{\hat{x}}\ \sigma_{\hat{x_s}},\ \hat{x_s} \in \hat{X}\ s.t. Corr(\hat{x_s}, x) > Corr(\hat{x}_{-s}, x, x)$, variance reduction causes problems at a ridge of fixed points that changes with the explanatory power of the algorithm & $\sigma_{\hat{x}}$
 
 ---
 # Term 2
 
-`$$Cov(\hat{x},u)$$`
+$$Cov(\hat{x},u)$$
 
-.hi-purple[Exclusion Restriction]. Since OLS is linear in form, requires `\(Cov(\textbf{z}\hat{\beta}, u) = 0\)`, but ML requires `\(Cov(f(\textbf{z}), u)\)` for any arbitrary functional form `\(f\)`.
+.hi-purple[Exclusion Restriction]. Since OLS is linear in form, requires $Cov(\textbf{z}\hat{\beta}, u) = 0$, but ML requires $Cov(f(\textbf{z}), u)$ for any arbitrary functional form $f$.
 
 --
 
@@ -1040,7 +1166,7 @@ This term leaves the practitioner with one of three tough choices
 
 2.) Extend the "Exclusion Restriction" 
 
-- If we can believably strengthen `\(corr(\textbf{z}, e) = 0\)` to `\(E(e|\textbf{z}) = 0\)` then we are safer.
+- If we can believably strengthen $corr(\textbf{z}, e) = 0$ to $E(e|\textbf{z}) = 0$ then we are safer.
 
 --
 
@@ -1049,7 +1175,7 @@ This term leaves the practitioner with one of three tough choices
 ---
 #Term 3
 
-`$$\frac{1}{Var(\hat{x})}$$`
+$$\frac{1}{Var(\hat{x})}$$
 
 Variance reduction, typically, is not a concern in 2SLS (though OLS does reduce variance) because our intuitive assumptions about the numerator are that it will be 0.
 
@@ -1066,53 +1192,65 @@ In PLR-based.hi[*] .hi[MLIV], many applications rely on a convergence approach t
 
 **2 Main Datasets**
 
-`\(\text{Number of Obs.}= 1000\)`. Differ only in number, strength and correlation of instruments.
+$\text{Number of Obs.}= 1000$. Differ only in number, strength and correlation of instruments.
 
 $$
 Z_i \sim N(0, \Sigma)\\
 X_i = Z_i\gamma + u_i\\
 Y_i = 1*X_i + u_i + \varepsilon_i
 $$
-Where case 1 (easy): `\(|\{z_1, \dots, z_N\}| = 7, \Sigma \equiv \text{diag. matrix}, \gamma =1\)`
+Where case 1 (easy): $|\{z_1, \dots, z_N\}| = 7, \Sigma \equiv \text{diag. matrix}, \gamma =1$
 
-And case 2 (hard): `\(|\{z_1, \dots, z_N\}|  = 100, \Sigma \not\equiv \text{diag. matrix},\ \gamma = [.7^1, \dots, .7^N]\)`
+And case 2 (hard): $|\{z_1, \dots, z_N\}|  = 100, \Sigma \not\equiv \text{diag. matrix},\ \gamma = [.7^1, \dots, .7^N]$
 
 ---
 # Correlation Structure of Datasets
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 .pull-left[
-&lt;img src="corrline.png-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE,out.width = "100%"}
+include_graphics("corrline.png-1.png")
+```
 ]
 
 .pull-right[
-&lt;img src="corrmat.png-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE, out.width = "100%"}
+include_graphics("corrmat.png-1.png")
+```
 ]
 ---
 # Coefficients for 3-way interactions
 
-&lt;img src="exclusionrest_3way.png-1.png" width="80%" style="display: block; margin: auto;" /&gt;
-One possible reason you might accidentally violate the exclusion restriction under `\(E(z|u) = 0\)` is from higher-order interaction terms.
+```{r, echo = FALSE, out.width = "80%"}
+include_graphics("exclusionrest_3way.png-1.png")
+```
+One possible reason you might accidentally violate the exclusion restriction under $E(z|u) = 0$ is from higher-order interaction terms.
 
 - coefficient estimates will generally get more biased from interactions of 3 terms or fewer.
 ---
 # Effect of Instrument Correlation
 
 .pull-left[
-&lt;img src="densridge2.png-1.png" width="900" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("densridge2.png-1.png")
+```
 ]
 
 .pull-right[
-&lt;img src="densridge3.png-1.png" width="900" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE}
+include_graphics("densridge3.png-1.png")
+```
 ]
 
 Basically - none
 ---
 # NNet Cross Validation
 
-&lt;img src="nnetchoices.png" width="55%" style="display: block; margin: auto;" /&gt;
+```{r, echo = FALSE, out.width = "55%"}
+include_graphics("nnetchoices.png")
+```
 
 ---
 class: middle, inverse
@@ -1121,8 +1259,8 @@ class: middle, inverse
 ---
 # Training Details
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 .center[.hi[Neural Networks] in particular are vulnerable to 'hyper-parameter hacking']
 
@@ -1159,8 +1297,8 @@ Latent Dimension
 ---
 # Training Seed
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 Initial test seed is 6652 - this is changed to be sure I didn't just get lucky.
 
@@ -1177,7 +1315,7 @@ At its core, D/DML is just another Doubly Robust Estimation identification strat
 
 .center[**Doubly Robust Estimation**]
 
-.pull-left[&lt;img src="double.png" style="width: 70%", class="center"/&gt;]
+.pull-left[<img src="double.png" style="width: 70%", class="center"/>]
 
 .pull-right[
 
@@ -1196,7 +1334,7 @@ Source: [Python Causality Handbook](https://matheusfacure.github.io/python-causa
 ---
 # D/DML
 
-&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+<br><br><br><br>
 
 **Takeaway:** This method requires the same three 'intuitive' assumptions required from your stock-standard conditional outcome/propensity score model.
 
@@ -1210,13 +1348,13 @@ class: clear
 
 **Grounded and validated** model of wildfire spread and damage, used by forest service.
 
-Link these models to get a full SCM/DAG to identify a good control set. `\(\rightarrow\)` sufficient to identify our causal effect of interest.
+Link these models to get a full SCM/DAG to identify a good control set. $\rightarrow$ sufficient to identify our causal effect of interest.
 
 
 
-.pull-left[&lt;img src="ecosystemval.png" style="width: 100%", class="center"/&gt;]
+.pull-left[<img src="ecosystemval.png" style="width: 100%", class="center"/>]
 
-.pull-right[&lt;img src="mttfiremap.png" style="width: 90%", class="center"/&gt;]
+.pull-right[<img src="mttfiremap.png" style="width: 90%", class="center"/>]
 
 
 ---
@@ -1229,7 +1367,7 @@ To help control for spatial variation in risk, fuels, amenities - you name it, I
 .pull-left[
 .center[**1**]
 
-&lt;img src="CZUInputs.png" style="width: 70%", class="center"/&gt;
+<img src="CZUInputs.png" style="width: 70%", class="center"/>
 ]
 
 .pull-right[
@@ -1254,7 +1392,7 @@ Unconditional Burn Probability, Conditional Flame Length, Wind Speed (at time of
 ---
 # Tabular Inputs
 
-&lt;br&gt;&lt;br&gt;
+<br><br>
 
 ## Tabular Inputs are much Simpler
 
@@ -1264,16 +1402,16 @@ Management Region (GACC), Reported Fuel Model, Hours between ignition and first 
 ---
 # D/DML Meta-Models
 
-&lt;br&gt;
+<br>
 Using out-of-sample estimates from two customized **Neural Network** models performing nonlinear regressions of Property Values and Suppression Costs 
 
 
-`$$P(X_i) = f(\cdot): \text{Treatment Propensity/Treatment Intensity}$$`
+$$P(X_i) = f(\cdot): \text{Treatment Propensity/Treatment Intensity}$$
 
-`$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+$$\mu(X_i) = g(\cdot): \text{Conditional Outcome}$$
 
 
-Where `\(X_i\)` is a set of tabular and raster controls.
+Where $X_i$ is a set of tabular and raster controls.
 
 Estimate the following system of equations following Frisch Waugh Lovell (ish).
 
@@ -1282,23 +1420,23 @@ Estimate the following system of equations following Frisch Waugh Lovell (ish).
 ---
 # D/DML Meta-Models
 
-&lt;br&gt;
-For wildfire suppression effort `\(i\)`...
+<br>
+For wildfire suppression effort $i$...
 
-`$$log(Suppression\ Costs_i) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+$$log(Suppression\ Costs_i) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$
 
-`$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+$$log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$
 
-&lt;!--$$\small \theta \equiv param\ of\ interest, \ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}, \eta \equiv\{f(X_i),g(X_i)\}$$--&gt;
+<!--$$\small \theta \equiv param\ of\ interest, \ X \equiv \{Rsk, Envr, Amn, Ex.Supp\}, \eta \equiv\{f(X_i),g(X_i)\}$$-->
 
-Estimating `\(\theta\)` with linear estimators in this system of equations produces estimation error in `\(f\)` in equation (2) that may produce bias
+Estimating $\theta$ with linear estimators in this system of equations produces estimation error in $f$ in equation (2) that may produce bias
 
 
 
 ---
 # D/DML
 
-&lt;br&gt;
+<br>
 
 __Q__ How is this different from controlling for regression inputs?
 
@@ -1328,7 +1466,7 @@ Takeaway - must ensure model is unbiased, at cost of higher variance. More than 
 ---
 # Meta-learner
 
-.center[&lt;img src="CCTDiagModel.jpg" style="width: 73%", class="center"/&gt;]
+.center[<img src="CCTDiagModel.jpg" style="width: 73%", class="center"/>]
 
 ---
 # Problems
@@ -1355,18 +1493,35 @@ Fortunately, wildfire suppression costs are likely valid under .hi[exchangabilit
 ---
 # Implicit Assumption of SCI: Invariance
 
-.hi-orange[Ignition point] predictions of wildfire costs `\(\implies\)` assuming .hi[invariance].
+.hi-orange[Ignition point] predictions of wildfire costs $\implies$ assuming .hi[invariance].
 
 Simplified example- imagine a featureless landscape with 1 neighborhood.
 
 --
 
-&lt;img src="DissFile2_files/figure-html/unnamed-chunk-35-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+```{r, echo = F, out.width = "60%"}
+p_load(magrittr, scico)
+
+df = data.frame(x = c(0:5), y = c(0:5))
+                
+paths = data.frame(p1x = c(2.5,2.5,3,3), p1y = c(2.5,3,4,5), p2x = c(2.5,1,0,0), p2y = c(2.5,2.5,1,1), p3x = c(2.5,3.5,4.5,4.5), p3y = c(2.5,1,0,0))
+
+p1 = ggplot(data = df, aes(x = x, y = y)) + geom_rect(xmin = 2.25, xmax = 2.75, ymin = 2.25, ymax = 2.75, fill = orange, alpha = .3) + geom_rect(xmin = 1.00, xmax = 1.9, ymin = 1, ymax = 2.1, fill = green, alpha = .3) +  geom_label(x = 1.45, y = 1.55, label = 'W.U.I.', color = green) +  geom_rect(xmin = 0, xmax = 5, ymin = 0, ymax = 5, fill = 'dark grey', color = 'grey', alpha = .01) + geom_path(data = paths, aes(x = p1x, y = p1y, color = 'Suppression = $10,000')) + geom_path(data = paths, aes(x = p2x, y = p2y, color = 'Suppression = $1,000,000')) + geom_path(data = paths, aes(x = p3x, y = p3y, color = 'Suppression = $100,000')) + theme_minimal()+ scale_y_discrete(labels = NULL) + scale_x_discrete(labels = NULL) + labs(title = 'Potential Fire Paths', subtitle = 'Effect on suppression expenditure', y = "", x = '') + scale_color_scico_d(name = '', labels = c('Fire path 1: Suppression = $1,000,000','Fire path 2: Suppression = $10,000' , 'Fire path 3: Suppression = $100,000'), palette = "roma") + theme(legend.text=element_text(size=15), plot.caption = element_text(size = 15), plot.title= element_text(size = 15), plot.subtitle = element_text(size = 12))
+
+p2 = ggplot(data = df, aes(x = x, y = y)) + geom_rect(xmin = 2.25, xmax = 2.75, ymin = 2.25, ymax = 2.75, fill = orange, alpha = .3) + geom_rect(xmin = 1.90, xmax = 2.8, ymin = 1, ymax = 2.1, fill = green, alpha = .3) +  geom_label(x = 2.3, y = 1.55, label = 'W.U.I.', color = green) +  geom_rect(xmin = 0, xmax = 5, ymin = 0, ymax = 5, fill = 'dark grey', color = 'grey', alpha = .01) + geom_path(data = paths, aes(x = p1x, y = p1y, color = 'Suppression = $10,000')) + geom_path(data = paths, aes(x = p2x, y = p2y, color = 'Suppression = $1,000,000')) + geom_path(data = paths, aes(x = p3x, y = p3y, color = 'Suppression = $100,000')) + theme_minimal()+ scale_y_discrete(labels = NULL) + scale_x_discrete(labels = NULL) + labs(title = 'Potential Fire Paths', subtitle = 'Effect on suppression expenditure', y = "", x = '') + scale_color_scico_d(name = '', labels = c('Fire path 1: Suppression = $1,000,000','Fire path 2: Suppression = $10,000' , 'Fire path 3: Suppression = $100,000'), palette = "roma") + theme(legend.text=element_text(size=15), plot.caption = element_text(size = 15), plot.title= element_text(size = 15), plot.subtitle = element_text(size = 12))
+
+p3 = ggplot(data = df, aes(x = x, y = y)) + geom_rect(xmin = 2.25, xmax = 2.75, ymin = 2.25, ymax = 2.75, fill = orange, alpha = .3) + geom_rect(xmin = 1.50, xmax = 2.4, ymin = 3.2, ymax = 4.3, fill = green, alpha = .3) +  geom_label(x = 1.9, y = 3.75, label = 'W.U.I.', color = green) +  geom_rect(xmin = 0, xmax = 5, ymin = 0, ymax = 5, fill = 'dark grey', color = 'grey', alpha = .01) + geom_path(data = paths, aes(x = p1x, y = p1y, color = 'Suppression = $10,000')) + geom_path(data = paths, aes(x = p2x, y = p2y, color = 'Suppression = $1,000,000')) + geom_path(data = paths, aes(x = p3x, y = p3y, color = 'Suppression = $100,000')) + theme_minimal()+ scale_y_discrete(labels = NULL) + scale_x_discrete(labels = NULL) + labs(title = 'Potential Fire Paths', subtitle = 'Effect on suppression expenditure', y = "", x = '', caption = "Orange square is ignition location \n Green rct. represents WUI neighborhood \n lines represent potential fire paths") + scale_color_scico_d(name = '', labels = c('Fire path 1: Suppression = $1,000,000','Fire path 2: Suppression = $10,000' , 'Fire path 3: Suppression = $100,000'), palette = "roma") + theme(legend.text=element_text(size=15), plot.caption = element_text(size = 15), plot.title= element_text(size = 15), plot.subtitle = element_text(size = 12))
+
+p4 = ggplot(data = df, aes(x = x, y = y)) + geom_rect(xmin = 2.25, xmax = 2.75, ymin = 2.25, ymax = 2.75, fill = orange, alpha = .3) + geom_rect(xmin = 3.5, xmax = 4.4, ymin = 2.5, ymax = 3.6, fill = green, alpha = .3) +  geom_label(x = 3.95, y = 3.05, label = 'W.U.I.', color = green) +  geom_rect(xmin = 0, xmax = 5, ymin = 0, ymax = 5, fill = 'dark grey', color = 'grey', alpha = .01) + geom_path(data = paths, aes(x = p1x, y = p1y, color = 'Suppression = $10,000')) + geom_path(data = paths, aes(x = p2x, y = p2y, color = 'Suppression = $1,000,000')) + geom_path(data = paths, aes(x = p3x, y = p3y, color = 'Suppression = $100,000')) + theme_minimal()+ scale_y_discrete(labels = NULL) + scale_x_discrete(labels = NULL) + labs(title = 'Potential Fire Paths', subtitle = 'Effect on suppression expenditure', y = "", x = '', caption = "Orange square is ignition location \n Green rct. represents WUI neighborhood \n lines represent potential fire paths") + scale_color_scico_d(name = '', labels = c('Fire path 1: Suppression = $1,000,000','Fire path 2: Suppression = $10,000' , 'Fire path 3: Suppression = $100,000'), palette = "roma") + theme(legend.text=element_text(size=15), plot.caption = element_text(size = 15), plot.title= element_text(size = 15), plot.subtitle = element_text(size = 12))
+#values=c('#24E0A3','#E04524', 'grey'))
+
+p1 + p2 + p3 + p4 +  plot_layout(ncol = 2, widths = c(2, 2), heights = c(2, 2),guides = 'collect')
+```
 
 ---
 # Bias
 
-&lt;br&gt;&lt;br&gt;&lt;br&gt;
+<br><br><br>
 
 This assumption forces any variables with .hi[non-invariant] data generating processes to absorb any spatial variation
 
@@ -1383,19 +1538,19 @@ Follows a Doubly-Robust Identification Strategy
 
 --
 
-`$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$
 
 
-`$$\small P(X_i) = f(\cdot): \text{Treatment Intensity}$$`
+$$\small P(X_i) = f(\cdot): \text{Treatment Intensity}$$
 
-`$$\small \mu(X_i) = g(\cdot): \text{Conditional Outcome}$$`
+$$\small \mu(X_i) = g(\cdot): \text{Conditional Outcome}$$
 
-`$$\small log(\frac{Suppression\ Costs_i}{Acres_i}) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$`
+$$\small log(\frac{Suppression\ Costs_i}{Acres_i}) = \theta log(Property\ Values_i) + g(X_i) + u_i\ \ \ (1)$$
 
-`$$\small log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$`
+$$\small log(Property\ Values_i) = f(X_i) + v_i\ \ \ (2)$$
 --
 
-`$$\small \hat{\theta} \equiv \text{Estimand of Interest; } \frac{\%\Delta \text{Suppression Costs}}{\%\Delta \text{Property Values}}$$`
+$$\small \hat{\theta} \equiv \text{Estimand of Interest; } \frac{\%\Delta \text{Suppression Costs}}{\%\Delta \text{Property Values}}$$
 
 ---
 # Econometric Models
@@ -1412,64 +1567,64 @@ Follows a Doubly-Robust Identification Strategy, combined with RDD, rv: Wildfire
 
 **Data**:
 
-`$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$
 
 
-`$$\small \mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+$$\small \mu = 1: \text{Monitoring required, ie, Size > 300}$$
 ---
 # Econometric Models
 
 **2.** Sensitivity change?
 
-`$$\small log(\frac{Suppression\ Costs_i}{Acres_i}) = \beta_1\mu+ \theta log(Property\ Values_i) + g_{\mu}(X_i|\mu) + u_i\ \ \ (1)$$`
+$$\small log(\frac{Suppression\ Costs_i}{Acres_i}) = \beta_1\mu+ \theta log(Property\ Values_i) + g_{\mu}(X_i|\mu) + u_i\ \ \ (1)$$
 
-`$$\small log(Property\ Values_i) = f_{\mu}(X_i|\mu) + v_i\ \ \ (2)$$`
+$$\small log(Property\ Values_i) = f_{\mu}(X_i|\mu) + v_i\ \ \ (2)$$
 
 **Data**:
 
-`$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$`
+$$\small X_i \equiv \{Fuels_i, Weather_i, DEM_i,Fire\ Model\ Simulation_i, PAD_i\ ;\iota^{ign.}_i\}^{30m\ res.}_{32\ bands \times 30k \times 30k}$$
 
-`$$\small \mu = 1: \text{Monitoring required, ie, Size &gt; 300}$$`
+$$\small \mu = 1: \text{Monitoring required, ie, Size > 300}$$
 
 **Hypotheses**:
-`$$\small H_0: \beta_1 = 0, H_a: \beta_1 \neq 0$$`
+$$\small H_0: \beta_1 = 0, H_a: \beta_1 \neq 0$$
 
 ---
 # Kendall's Tau
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 
-`$$\small \text{for ranked }(x_i, y_i) \in \{(x_1, y_1),\dots, (x_{n-1}, y_{n-1})\}$$`
+$$\small \text{for ranked }(x_i, y_i) \in \{(x_1, y_1),\dots, (x_{n-1}, y_{n-1})\}$$
 
-`$$\small \frac{(\#\ (x_i - x_{i+1}) * (y_i - y_{i+1})\ &gt; 0) -  (\#\ (x_i - x_{i+1}) * (y_i - y_{i+1})\ &lt; 0)}{\text{total pairs}}$$`
+$$\small \frac{(\#\ (x_i - x_{i+1}) * (y_i - y_{i+1})\ > 0) -  (\#\ (x_i - x_{i+1}) * (y_i - y_{i+1})\ < 0)}{\text{total pairs}}$$
 ---
 # DAG-work
 
-.center[&lt;img src="dagitty-model(1).jpg" style="width: 100%", class="center"/&gt;]
+.center[<img src="dagitty-model(1).jpg" style="width: 100%", class="center"/>]
 
 ---
 # DAG-work 2
 
-.center[&lt;img src="dagitty-model(2).jpg" style="width: 100%", class="center"/&gt;]
+.center[<img src="dagitty-model(2).jpg" style="width: 100%", class="center"/>]
 
 ---
 # Why 'Acres'/'Perimeter' is Bad Control
 
-.center[&lt;img src="dagitty-model(3).jpg" style="width: 100%", class="center"/&gt;]
+.center[<img src="dagitty-model(3).jpg" style="width: 100%", class="center"/>]
 ---
 # Cost Monitoring (General)
 
-&lt;br&gt;&lt;br&gt;&lt;br&gt;
+<br><br><br>
 
-`$$Total\ Cost = f(h(L,K),\tilde{P})$$`
-`$$Total\ Benefit = g(h(L,K), Env)$$`
+$$Total\ Cost = f(h(L,K),\tilde{P})$$
+$$Total\ Benefit = g(h(L,K), Env)$$
 
 Ideally, we want...
 
-`$$\frac{\partial f}{\partial h}\frac{\partial h}{\partial K} = \frac{\partial g}{\partial h}\frac{\partial h}{\partial K}$$`
-But in both cases, `\(h\)` is not observed. So we settle for next-best estimate, technical efficiency in costs.
+$$\frac{\partial f}{\partial h}\frac{\partial h}{\partial K} = \frac{\partial g}{\partial h}\frac{\partial h}{\partial K}$$
+But in both cases, $h$ is not observed. So we settle for next-best estimate, technical efficiency in costs.
 ---
 # Do Fire Managers Respond to Costs?
 
@@ -1483,14 +1638,15 @@ Alternative - test intensive margin, ie, for fires that have forecasts, do rate 
 
 --
 
-`$$\small \Delta_{day} log(AvgCostPerAcre_{i,t}) =$$`
-
-`$$\small \beta_0 + X_i\gamma + \beta_1 log(PropertyValue_{20km, i}) + \alpha_1 log(AvgCostPerAcre_{i,t-1}) + \alpha_2(EstCost)$$`
+$$\small \Delta_{day} log(AvgCostPerAcre_{i,t}) = $$
+$$\small \beta_0 + X_i\gamma + \beta_1 log(PropertyValue_{20km, i}) + \alpha_1 log(AvgCostPerAcre_{i,t-1}) + \alpha_2(EstCost)$$
 ---
 # Bare Bones Results
-&lt;br&gt;
-&lt;br&gt;
-&lt;img src="results-2-2.png" width="872" style="display: block; margin: auto;" /&gt;
+<br>
+<br>
+```{r, echo = FALSE}
+include_graphics('results-2-2.png')
+```
 
 It seems as if, conditional on publishing a cost estimate, average costs per acre rise by roughly %.44 for a corresponding 1% increase in estimate, but also appear to still respond to total property value within 20 km.
 
@@ -1503,18 +1659,9 @@ Maybe, this has NOTHING do do with spatial data at all. It's all nonlinearity.
 
 Tried XGBoost on point level data - improved estimates from SCI (and actually does not so bad)
 
-&lt;img src="Xgboostres.png" width="1128" style="display: block; margin: auto;" /&gt;
-
----
-# OOD Performance
-
-&lt;br&gt;
-
-&lt;br&gt;
-
-Despite an enormous amount of work - this part is pretty boring. The sample size (oos) is small, so standard errors are large, but the point estimate is very close to the old one -
-
-`$$\theta_{OOD} \approx .0104$$`
+```{r, echo = FALSE}
+include_graphics('Xgboostres.png')
+```
 
 ---
 # What does the kernel Look Like?
@@ -1525,16 +1672,13 @@ Pretty hard to figure out, with as many inputs as we have, what actually matters
 
 Harder still - these functions are not linear. How do we get interpretable 'coefficient equivalents'? How about partial gradients?
 
-`$$\hat{\beta}_{nonlin} \equiv \frac{\partial f}{\partial X_i}*X_i$$`
+$$\hat{\beta}_{nonlin} \equiv \frac{\partial f}{\partial X_i}*X_i$$
 
 Shown: good performance across interpretability metrics in lab settings.
 
----
-# What does the kernel look like?
-
 However - if we have very 'flat' gradients...
 
-`$$\frac{\partial f}{\partial X_i} \approx 0$$` 
+$$\frac{\partial f}{\partial X_i} \approx 0$$ 
 
 ...we only have local information about the activation 
 
@@ -1543,7 +1687,7 @@ However - if we have very 'flat' gradients...
 ---
 # Kernel, improved
 
-&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+<br><br><br><br>
 
 Good news: Because Neural Networks are differentiable everywhere, I can use a very cool tool to explore what I'm controlling for in full.
 
@@ -1552,10 +1696,10 @@ Known as 'integrated gradients' essentially it calculates an approximate Riemann
 ---
 # Visualizing the Kernel
 
-&lt;br&gt;&lt;br&gt;
+<br><br>
 
-`$$IG := (x_i - x_i') \times \int^1_{\alpha = 0}\frac{\partial NN(x_i' + \alpha*(x_i - x_i'))}{\partial x_i}$$`
-Where `\(x_i\)` is an image, but practically speaking could be as fine-grained as a single channel-pixel.
+$$IG := (x_i - x_i') \times \int^1_{\alpha = 0}\frac{\partial NN(x_i' + \alpha*(x_i - x_i'))}{\partial x_i}$$
+Where $x_i$ is an image, but practically speaking could be as fine-grained as a single channel-pixel.
 
 --
 
@@ -1565,38 +1709,38 @@ This buys me an 'explainability' map over the features I put into the CCT, and a
 # Kernel
 .center[**Holiday Farm Fire:** NLCD Impermeability metric]
 
-.center[&lt;img src="Kernel1HF.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="Kernel1HF.png" style="width: 60%", class="center"/>]
 
 ---
 # Kernel
 .center[**Holiday Farm Fire:** NLCD Impermeability metric (point of ignition)]
 
-.center[&lt;img src="IgnitionPtHFF.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="IgnitionPtHFF.png" style="width: 60%", class="center"/>]
 
 ---
 # Kernel
 .center[**Holiday Farm Fire:** NLCD Impermeability metric]
 
-.center[&lt;img src="HFKernel1.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="HFKernel1.png" style="width: 60%", class="center"/>]
 
 ---
 # Kernel
 .center[**Holiday Farm Fire:** NLCD Impermeability metric]
 
-.center[&lt;img src="KernelZoomHF-2.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="KernelZoomHF-2.png" style="width: 60%", class="center"/>]
 
 ---
 # Kernel
 .center[**Holiday Farm Fire:** NLCD Impermeability metric]
 
-.center[&lt;img src="HFKernel-4.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="HFKernel-4.png" style="width: 60%", class="center"/>]
 
 ---
 # Kernel: Utah
 .center[**Range Fire:** NLCD Impermeability metric]
 
 
-.center[&lt;img src="PropertyAtRisk.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="PropertyAtRisk.png" style="width: 60%", class="center"/>]
 
 
 ---
@@ -1604,21 +1748,30 @@ This buys me an 'explainability' map over the features I put into the CCT, and a
 .center[**Range Fire:** Slope DEM metric]
 
 
-.center[&lt;img src="UtahFire-slope.png" style="width: 60%", class="center"/&gt;]
+.center[<img src="UtahFire-slope.png" style="width: 60%", class="center"/>]
 
 ---
 # Kendall Tau: Destroyed Homes (SCI)
 
-&lt;img src="kt_homedestroyed_2.png" width="1600" style="display: block; margin: auto;" /&gt;
+```{r, echo = F}
+include_graphics('kt_homedestroyed_2.png')
+```
 ---
 # Why Transformer
 
-`$$\mathbf{h}_u = \varphi \left(x_u,\sum_{v\in\mathcal{V}}a(x_u, x_v)\rho(x_v) \right)$$`
+$$
 
-Where `\(a(x_u, x_v) \in [0,1]\)`. This, importantly, is a permutation invariant function, meaning, for permutation operator `\(\mathbf{P}\)`
+    \mathbf{h}_u = \varphi \left(x_u,\sum_{v\in\mathcal{V}}a(x_u, x_v)\rho(x_v) \right)
+$$
 
-`$$\varphi \left(x_{1u},\sum_{v\in\mathcal{V}}a(x_{1u}, x_v)\rho(x_v) \right)=$$`
-`$$\varphi \left(x_{2u},\sum_{v\in\mathcal{V}}a(x_{2u}, x_v)\rho(x_v) \right), \forall x_{1u} \in \mathbf{X}\text{ and }\forall x_{2u} \in \mathbf{PX}$$`
+Where $a(x_u, x_v) \in [0,1]$. This, importantly, is a permutation invariant function, meaning, for permutation operator $\mathbf{P}$
+
+$$
+    \varphi \left(x_{1u},\sum_{v\in\mathcal{V}}a(x_{1u}, x_v)\rho(x_v) \right)= 
+$$
+$$
+\varphi \left(x_{2u},\sum_{v\in\mathcal{V}}a(x_{2u}, x_v)\rho(x_v) \right), \forall x_{1u} \in \mathbf{X}\text{ and }\forall x_{2u} \in \mathbf{PX}
+$$
 ---
 # Sources
 
@@ -1723,7 +1876,7 @@ suppression costs, International Journal of Wildland Fire, 22(4), 537, doi:10.10
 .smallest[
 
 Hand, M. S., K. M. Gebert, J. Liang, D. E. Calkin, M. P. Thompson, and M. Zhou, Economics of wildfire man-
-agement: the development and application of suppression expenditure models, Springer Science &amp; Business
+agement: the development and application of suppression expenditure models, Springer Science & Business
 Media, 2014a.
 
 Hand, M. S., K. M. Gebert, J. Liang, D. E. Calkin, M. P. Thompson, and M. Zhou, Regional and temporal
@@ -1786,7 +1939,7 @@ class: inverse, middle
 ---
 # Timeline
 
-&lt;br&gt;
+<br>
 
 **Fifth Year:**
 
@@ -1822,11 +1975,13 @@ __Department Service:__
   - Split into two papers, hedonic analysis and BLP sorting model
 ]
 
-&lt;img src="sortingproj.png" width="100%" height="100%" style="display: block; margin: auto;" /&gt;
+```{R, sortproj, out.width = "100%", out.height = "100%", echo = F,fig.cap = ""}
+include_graphics("sortingproj.png")
+```
 ---
 
-&lt;br&gt;
-&lt;br&gt;
+<br>
+<br>
 
 My dissertation _Essays in Machine Learning for Causal Inference and Environmental Economics_ has two works:
 
@@ -1835,126 +1990,3 @@ My dissertation _Essays in Machine Learning for Causal Inference and Environment
 
 2. _Revisiting the Stratified Cost Index: Investigating Causal Nature of Property Value on Suppression Costs_ (Solo Authored)
 
-    </textarea>
-<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
-<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
-<script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false
-});
-if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
-  window.dispatchEvent(new Event('resize'));
-});
-(function(d) {
-  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
-  if (!r) return;
-  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
-  d.head.appendChild(s);
-})(document);
-
-(function(d) {
-  var el = d.getElementsByClassName("remark-slides-area");
-  if (!el) return;
-  var slide, slides = slideshow.getSlides(), els = el[0].children;
-  for (var i = 1; i < slides.length; i++) {
-    slide = slides[i];
-    if (slide.properties.continued === "true" || slide.properties.count === "false") {
-      els[i - 1].className += ' has-continuation';
-    }
-  }
-  var s = d.createElement("style");
-  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
-  d.head.appendChild(s);
-})(document);
-// delete the temporary CSS (for displaying all slides initially) when the user
-// starts to view slides
-(function() {
-  var deleted = false;
-  slideshow.on('beforeShowSlide', function(slide) {
-    if (deleted) return;
-    var sheets = document.styleSheets, node;
-    for (var i = 0; i < sheets.length; i++) {
-      node = sheets[i].ownerNode;
-      if (node.dataset["target"] !== "print-only") continue;
-      node.parentNode.removeChild(node);
-    }
-    deleted = true;
-  });
-})();
-(function() {
-  "use strict"
-  // Replace <script> tags in slides area to make them executable
-  var scripts = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container script'
-  );
-  if (!scripts.length) return;
-  for (var i = 0; i < scripts.length; i++) {
-    var s = document.createElement('script');
-    var code = document.createTextNode(scripts[i].textContent);
-    s.appendChild(code);
-    var scriptAttrs = scripts[i].attributes;
-    for (var j = 0; j < scriptAttrs.length; j++) {
-      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
-    }
-    scripts[i].parentElement.replaceChild(s, scripts[i]);
-  }
-})();
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-// adds .remark-code-has-line-highlighted class to <pre> parent elements
-// of code chunks containing highlighted lines with class .remark-code-line-highlighted
-(function(d) {
-  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
-  const preParents = [];
-  const findPreParent = function(line, p = 0) {
-    if (p > 1) return null; // traverse up no further than grandparent
-    const el = line.parentElement;
-    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
-  };
-
-  for (let line of hlines) {
-    let pre = findPreParent(line);
-    if (pre && !preParents.includes(pre)) preParents.push(pre);
-  }
-  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
-})(document);</script>
-
-<script>
-slideshow._releaseMath = function(el) {
-  var i, text, code, codes = el.getElementsByTagName('code');
-  for (i = 0; i < codes.length;) {
-    code = codes[i];
-    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
-      text = code.textContent;
-      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
-          /^\$\$(.|\s)+\$\$$/.test(text) ||
-          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
-        code.outerHTML = code.innerHTML;  // remove <code></code>
-        continue;
-      }
-    }
-    i++;
-  }
-};
-slideshow._releaseMath(document);
-</script>
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-(function () {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
-  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
-    script.src  = script.src.replace(/^https?:/, '');
-  document.getElementsByTagName('head')[0].appendChild(script);
-})();
-</script>
-  </body>
-</html>

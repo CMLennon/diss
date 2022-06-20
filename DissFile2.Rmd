@@ -1665,6 +1665,17 @@ include_graphics('Xgboostres.png')
 ```
 
 ---
+# OOD Performance
+
+<br>
+
+<br>
+
+Despite an enormous amount of work - this part is pretty boring. The sample size (oos) is small, so standard errors are large, but the point estimate is very close to the old one -
+
+$$\theta_{OOD} \approx .0104$$
+
+---
 # What does the kernel Look Like?
 
 Pretty hard to figure out, with as many inputs as we have, what actually matters.
@@ -1763,19 +1774,12 @@ include_graphics('kt_homedestroyed_2.png')
 ---
 # Why Transformer
 
-$$
-
-    \mathbf{h}_u = \varphi \left(x_u,\sum_{v\in\mathcal{V}}a(x_u, x_v)\rho(x_v) \right)
-$$
+$$\mathbf{h}_u = \varphi \left(x_u,\sum_{v\in\mathcal{V}}a(x_u, x_v)\rho(x_v) \right)$$
 
 Where $a(x_u, x_v) \in [0,1]$. This, importantly, is a permutation invariant function, meaning, for permutation operator $\mathbf{P}$
 
-$$
-    \varphi \left(x_{1u},\sum_{v\in\mathcal{V}}a(x_{1u}, x_v)\rho(x_v) \right)= 
-$$
-$$
-\varphi \left(x_{2u},\sum_{v\in\mathcal{V}}a(x_{2u}, x_v)\rho(x_v) \right), \forall x_{1u} \in \mathbf{X}\text{ and }\forall x_{2u} \in \mathbf{PX}
-$$
+$$\varphi \left(x_{1u},\sum_{v\in\mathcal{V}}a(x_{1u}, x_v)\rho(x_v) \right)=$$
+$$\varphi \left(x_{2u},\sum_{v\in\mathcal{V}}a(x_{2u}, x_v)\rho(x_v) \right), \forall x_{1u} \in \mathbf{X}\text{ and }\forall x_{2u} \in \mathbf{PX}$$
 ---
 # Sources
 
